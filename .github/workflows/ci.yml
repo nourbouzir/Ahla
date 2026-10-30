@@ -1,0 +1,73 @@
+# Continuous Integration — runs automatically on every push and pull request.
+#
+# Philosophy for this course: KEEP IT LIGHT. CI should catch obvious breakage
+# and remind you about docs — not become a second job. Every stack block only
+# runs if its manifest file exists, so CI stays green on a repo that has docs
+# but no code yet.
+#
+# AHLA is a Laravel 11 / PHP 8.3 project: the PHP block starts running as soon
+# as composer.json is committed (sprint 1).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so the docs check can diff commits
+
+      # --- PHP / Laravel (only runs if composer.json exists) ------------------
+      - name: Set up PHP
+        if: ${{ hashFiles('composer.json') != '' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, intl, pdo_sqlite, gd, zip
+          coverage: none
+
+      - name: Install PHP deps
+        if: ${{ hashFiles('composer.json') != '' }}
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Laravel environment
+        if: ${{ hashFiles('composer.json') != '' }}
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run PHP tests
+        # Tests use an in-memory SQLite database (set in phpunit.xml), so CI
+        # needs no MySQL service. Row-lock/concurrency tests need MySQL and are
+        # run locally (TODO: add a mysql service when those tests exist).
+        if: ${{ hashFiles('composer.json') != '' }}
+        run: php artisan test
+
+      # --- Front-end assets (only runs if package.json exists) ----------------
+      - name: Set up Node
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node deps
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm install
+
+      - name: Build / test front-end
+        # Runs only the scripts that exist, so it never fails for a missing one.
+        if: ${{ hashFiles('package.json') != '' }}
+        run: |
+          npm test --if-present
+          npm run build --if-present
+
+      # --- Docs reminder (always runs, never fails the build) -----------------
+      - name: Docs reminder
+        run: bash scripts/check-docs.sh

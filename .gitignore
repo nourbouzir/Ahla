@@ -1,0 +1,71 @@
+# =============================================================================
+# .gitignore — AHLA (PHP 8.3 / Laravel 11 + Vite assets).
+# Golden rule: never commit secrets, build output, or dependency folders.
+# =============================================================================
+
+# --- Secrets & local environment (NEVER commit these) -----------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE ------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.sample.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Logs & temp -------------------------------------------------------------
+*.log
+logs/
+tmp/
+.cache/
+coverage/
+.coverage
+htmlcov/
+
+# =============================================================================
+# PHP / Laravel
+# =============================================================================
+/vendor/
+/storage/*.key
+/storage/pail
+/bootstrap/cache/*.php
+/public/storage
+/public/hot
+/public/build
+.phpunit.result.cache
+.phpunit.cache/
+/.phpunit.cache
+Homestead.json
+Homestead.yaml
+auth.json
+.php-cs-fixer.cache
+.phpstorm.meta.php
+_ide_helper.php
+
+# Uploaded user files — ID documents must NEVER reach git
+/storage/app/private/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+# Laravel Sail
+/docker-compose.override.yml
+
+# =============================================================================
+# Node / front-end assets (Vite)
+# =============================================================================
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

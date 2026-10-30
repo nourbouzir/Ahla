@@ -1,0 +1,11 @@
+# Normalize line endings: LF in the repo, so Windows and macOS teammates don't
+# produce noisy diffs and shell scripts keep working.
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.docx binary
