@@ -5,8 +5,9 @@
 > (`docs/requirements/Ahla_SRS_FV.docx`). Keep it a living document: when the real
 > code drifts from this, update this file (or the code).
 >
-> Requirement IDs below (`FR-xx`, `NFR-xx`) follow the **SDD / SRS v1.0** numbering
-> unless marked "FV". The two numbering schemes are different — see §7.
+> Requirement IDs below (`FR-xx`, `NFR-xx`, `BR-xx`) are **SRS FV** ids. Where the SDD and
+> SRS FV disagreed, [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md) decides and
+> [`requirements/ID-mapping.md`](requirements/ID-mapping.md) maps the old ids.
 
 ## 1. Overview
 
@@ -19,13 +20,13 @@ the encrypted storage.
 
 Requests flow downwards: **presentation → application (modules) → data**. A module
 never reads another module's tables; it calls that module's *service* or reacts to
-its *domain events*. Slow work (email/SMS, translation, alternative-host
-suggestions) and every time-based rule (12 h request expiry, reminders,
-auto-complete, payouts, ID-document purge) runs on a **job queue and scheduler**,
+its *domain events*. Slow work (email, translation, alternative-host
+suggestions) and every time-based rule (12 h request expiry, auto-complete,
+ID-document purge) runs on a **job queue and scheduler**,
 not inside the user's request.
 
 Five external services sit behind interfaces: payment gateway, translation API,
-map service (browser-side Leaflet/OpenStreetMap), email/SMS provider, and a
+map service (browser-side Leaflet/OpenStreetMap), email provider, and a
 video-call link (e.g. Jitsi) used for host verification.
 
 ## 2. Component diagram
@@ -45,7 +46,6 @@ flowchart TB
         BOOK[Booking]
         PAY[Payment]
         MSG[Messaging]
-        TRUST[Reviews & Trust]
         NOTIF[Notification]
         BUS{{"Event bus + Job queue / scheduler"}}
     end
@@ -58,20 +58,20 @@ flowchart TB
     subgraph External
         GW[Payment gateway]
         TR[Translation API]
-        MAIL[Email / SMS provider]
+        MAIL[Email provider]
         MAPS[OpenStreetMap + Leaflet]
         VID[Video-call link]
     end
 
     WEB -->|HTTPS + JSON| AUTH
-    WEB --> EXP & MAT & BOOK & MSG & TRUST
-    ADM --> VER & TRUST & AUTH
+    WEB --> EXP & MAT & BOOK & MSG
+    ADM --> VER & AUTH
     BOOK --> MAT
     BOOK --> PAY
     BOOK -.publishes events.-> BUS
-    BUS -.-> NOTIF & TRUST & MAT
+    BUS -.-> NOTIF & MAT
     VER --> FILES
-    AUTH & VER & EXP & MAT & BOOK & PAY & MSG & TRUST --> DB
+    AUTH & VER & EXP & MAT & BOOK & PAY & MSG --> DB
     PAY --> GW
     GW -.signed webhook.-> PAY
     MSG --> TR
@@ -84,40 +84,37 @@ flowchart TB
 
 | Component | Responsibility | Talks to |
 |-----------|----------------|----------|
-| Auth & Access | Registration, login, roles, 2FA for admins, 30-min session timeout | Users table, all controllers |
+| Auth & Access | Registration, login, password reset, roles, 30-min session timeout | Users table, all controllers |
 | Host Verification | Applications, ID storage, video-call scheduling, host state machine | Encrypted storage, Notification, video-call link |
 | Experience & Availability | Experiences, weekly slots, blocked dates, meeting points | Map service, DB |
 | Search & Matching | Filters and ranks hosts with strategies; finds alternative hosts | Experience module, DB |
 | Booking | Requests, daily-limit and overlap checks, accept/decline, cancel, complete, booking state machine | Payment, Matching, Event bus |
-| Payment | Authorise, capture, refund (refund policies), payouts minus commission | Payment gateway (Adapter), DB |
+| Payment | Authorise, capture, release, refund (refund policies) | Payment gateway (Adapter), DB |
 | Messaging | Booking conversations, contact masking, translation | Translation service (Adapter) |
-| Reviews & Trust | Reviews, ratings, reports, strike counter, automatic suspension, disputes | Booking, Verification |
-| Notification | Email / SMS / in-app messages for every event and reminder | Email/SMS provider, Event bus |
+| Notification | In-app and email messages for the in-scope events (ADR 0004, decision 10) | Email provider, Event bus |
 | Event bus + queue | Dispatches domain events to listeners; runs timed jobs | All modules |
 
 ### Scheduled jobs
 
 | Job | Frequency | What it does |
 |-----|-----------|--------------|
-| `ExpireRequests` | Every 10 min | Requests older than 12 h → Expired; release authorisation; notify tourist |
-| `SendReminders` | Every 10 min | Reminders 24 h and 2 h before each accepted booking |
-| `AutoComplete` | Every 30 min | Bookings ended 2 h ago with no dispute → Completed |
-| `ReleasePayouts` | Hourly | Completed > 24 h ago, no dispute → payout (amount − 15%) |
-| `PublishReviews` | Daily | Publish reviews older than 14 days |
+| `ExpireRequests` | Every 10 min | `requested` bookings older than 12 h → `expired`; release the authorisation; notify the tourist |
+| `AutoComplete` | Every 30 min | `confirmed` bookings that ended 2 h ago → `completed` |
 | `PurgeIdDocuments` | Daily | Delete ID files 90 days after the verification decision |
+
+Reminders, payouts and review publication are out of v1 ([ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md), decision 12).
 
 ## 3. Key modules
 
 | Module | Responsibility | Lives in |
 |--------|----------------|----------|
-| Auth | Accounts, roles, sessions, 2FA | `app/Modules/Auth/` |
+| Auth | Accounts, roles, sessions | `app/Modules/Auth/` |
 | Verification | Host applications, ID, video call, `HostState` | `app/Modules/Verification/` |
 | Experience | Experiences, availability, meeting points | `app/Modules/Experience/` |
 | Matching | `MatchingService`, `MatchingStrategy` implementations | `app/Modules/Matching/` |
 | Booking | `BookingService`, `Booking`, `BookingState` | `app/Modules/Booking/` |
-| Payment | `PaymentGateway` adapters, `RefundPolicy` classes, payouts | `app/Modules/Payment/` |
+| Payment | `PaymentGateway` adapters, `RefundPolicy` classes | `app/Modules/Payment/` |
 | Messaging | Messages, `Translator` adapter | `app/Modules/Messaging/` |
-| Trust | Reviews, reports, disputes, `StrikeCounter` | `app/Modules/Trust/` |
 | Notification | `NotificationListener`, channels | `app/Modules/Notification/` |
 | Events / Jobs | Domain events, listeners, scheduled jobs | `app/Events/`, `app/Listeners/`, `app/Jobs/` |
 
@@ -125,9 +122,9 @@ flowchart TB
 
 | Pattern | Applied to |
 |---------|------------|
-| **State** | `HostState` (Applied, Verified, Active, Suspended, Rejected, Banned) and `BookingState` (Requested, Accepted, Declined, Expired, Cancelled, Completed, Disputed) — each state class allows or refuses each action |
+| **State** | `HostState` (pending, verified, rejected, suspended) and `BookingState` (requested, confirmed, declined, expired, cancelled, completed) — each state class allows or refuses each action |
 | **Strategy** | `MatchingStrategy` (Language, Interest, Proximity, Rating) combined by `MatchingService` with configurable weights; `RefundPolicy` (`TouristCancellationPolicy`, `HostCancellationPolicy`) |
-| **Observer** (domain events) | `EventBus` with `NotificationListener`, `StrikeCounter`, `AlternativeHostSuggester`, `AuditLogger`; slow listeners run on the queue |
+| **Observer** (domain events) | `EventBus` with `NotificationListener` and `AuditLogger`; the alternative-host lookup (`AlternativeHostFinder`) runs on a late host cancellation; slow listeners run on the queue |
 | **Adapter** | `PaymentGateway` (one adapter per provider) and `Translator` (provider adapter + fallback returning the original text) |
 
 ## 4. Data model
@@ -142,13 +139,12 @@ erDiagram
     host_profiles ||--o{ verification_requests : "verified by"
     host_profiles ||--o{ experiences : offers
     host_profiles ||--o{ availability : sets
+    host_profiles ||--o{ blocked_dates : blocks
+    host_profiles ||--o{ bookings : "is booked"
     users ||--o{ bookings : "tourist requests"
     experiences ||--o{ bookings : "booked as"
     bookings ||--|| payments : "paid by"
     bookings ||--o{ messages : has
-    bookings ||--o{ reviews : receives
-    bookings ||--o{ disputes : "may have"
-    users ||--o{ reports : files
     users ||--o{ audit_log : "acts in"
 
     users {
@@ -156,24 +152,22 @@ erDiagram
         enum role "tourist, host, admin"
         string email UK
         string phone
-        string password_hash "bcrypt"
+        string password_hash
         string preferred_lang
-        string two_factor_secret "admins"
     }
     host_profiles {
         bigint user_id PK
-        enum status "applied, verified, active, suspended, rejected, banned"
+        enum status "pending, verified, rejected, suspended"
         text bio
         string city
         decimal lat
         decimal lng
-        decimal rating_avg
-        string payout_account
+        decimal rating_avg "nullable until reviews exist"
     }
     verification_requests {
         bigint id PK
         bigint host_id FK
-        string id_document_path "encrypted disk"
+        string id_document_path "private disk"
         datetime video_call_at
         string decision
         bigint decided_by FK
@@ -194,28 +188,35 @@ erDiagram
         time start_time
         time end_time
     }
+    blocked_dates {
+        bigint id PK
+        bigint host_id FK
+        date blocked_on
+    }
     bookings {
         bigint id PK
+        bigint host_id FK
         bigint experience_id FK
         bigint tourist_id FK
         date booking_date
         time start_time
         time end_time
         tinyint group_size
+        string location
         decimal total_price "10,3"
-        string status
+        enum status "requested, confirmed, declined, expired, cancelled, completed"
         datetime expires_at
-        boolean late_host_cancel
+        string cancelled_by "tourist or host"
+        datetime cancelled_at
+        string cancellation_reason
     }
     payments {
         bigint id PK
         bigint booking_id FK, UK
         decimal amount
-        string status "authorised, captured, refunded"
+        enum status "authorised, captured, released, refunded, failed"
         decimal refunded_amount
         string gateway_ref
-        decimal commission
-        datetime payout_at
     }
     messages {
         bigint id PK
@@ -223,23 +224,6 @@ erDiagram
         bigint sender_id FK
         text original_text
         text translated_text
-    }
-    reviews {
-        bigint id PK
-        bigint booking_id FK
-        bigint author_id FK
-        tinyint rating "1-5"
-        boolean published
-    }
-    disputes {
-        bigint id PK
-        bigint booking_id FK
-    }
-    reports {
-        bigint id PK
-        bigint reporter_id FK
-        string target_type
-        bigint target_id
     }
     audit_log {
         bigint id PK
@@ -254,40 +238,36 @@ erDiagram
 
 Integrity rules:
 
-- The daily limit is enforced by locking the host's bookings for that date (`SELECT … FOR UPDATE`) *before* counting, inside the same transaction that inserts or accepts the booking.
+- The daily limit and the overlap check are enforced by locking the host's bookings for that date (`SELECT … FOR UPDATE`) *before* counting, inside the same transaction that inserts or confirms the booking. Only `confirmed` bookings count. Intervals are half-open `[start, end)`, so a booking may start exactly when another ends, and times are in Africa/Tunis (ADR 0004, decision 11).
 - A booking's `payments` row is created in the same transaction as the booking; a failed authorisation rolls everything back.
-- `bookings` has `INDEX(experience_id, booking_date)` and `INDEX(status, expires_at)`; `reviews` has `UNIQUE(booking_id, author_id)`.
-- ID documents live on an encrypted private disk and are deleted by `PurgeIdDocuments` 90 days after the decision.
+- `bookings` has `INDEX(host_id, booking_date)` (locking and overlap) and `INDEX(status, expires_at)` (expiry job).
+- ID documents live on the private disk and are deleted by `PurgeIdDocuments` 90 days after the decision.
+- Not in v1: reviews, disputes, reports, and commission or payout columns ([ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md), decision 12).
 
 ### State machines
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Applied
-    Applied --> Verified: admin approves after video call
-    Applied --> Rejected: admin rejects (reason)
-    Verified --> Active: experience published + payout details entered
-    Active --> Suspended: 2 late cancels in 30 days or avg rating < 3.0
-    Suspended --> Active: admin reinstates
-    Suspended --> Banned: admin bans
-    Rejected --> [*]
-    Banned --> [*]
+    [*] --> pending: host applies (profile + ID)
+    pending --> verified: admin approves after ID check and video call
+    pending --> rejected: admin rejects (reason)
+    verified --> suspended: admin suspends (reason)
+    suspended --> verified: admin reinstates
+    rejected --> pending: host re-applies
 ```
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Requested: tourist requests (amount authorised)
-    Requested --> Accepted: host accepts (amount captured)
-    Requested --> Declined: host declines
-    Requested --> Expired: no answer in 12 h
-    Accepted --> Cancelled: tourist or host cancels
-    Accepted --> Completed: host confirms, or auto 2 h after end
-    Completed --> Disputed: tourist disputes within 24 h
-    Declined --> [*]
-    Expired --> [*]
-    Cancelled --> [*]
-    Completed --> [*]
-    Disputed --> [*]
+    [*] --> requested: tourist requests (amount authorised)
+    requested --> confirmed: host accepts and the capture succeeds
+    requested --> declined: host declines (authorisation released)
+    requested --> expired: no answer in 12 h (authorisation released)
+    confirmed --> cancelled: tourist or host cancels (refund)
+    confirmed --> completed: automatic, 2 h after the end time
+    declined --> [*]
+    expired --> [*]
+    cancelled --> [*]
+    completed --> [*]
 ```
 
 ## 5. Key flows
@@ -307,7 +287,7 @@ sequenceDiagram
     T->>API: POST /api/bookings
     API->>BS: request(experience, date, start, group)
     BS->>DB: BEGIN; lock host's bookings for the date
-    BS->>BS: host Active? <2 accepted? no overlap? group fits?
+    BS->>BS: host verified? <2 confirmed? no overlap? group fits?
     alt rule violated
         BS-->>T: 409 host full / slot taken (reason)
     else rules pass
@@ -317,22 +297,31 @@ sequenceDiagram
             BS->>DB: ROLLBACK
             BS-->>T: 402 payment could not be authorised
         else authorised
-            BS->>DB: INSERT booking (Requested, expires in 12 h) + payment; COMMIT
+            BS->>DB: INSERT booking (requested, expires in 12 h) + payment; COMMIT
             BS->>BUS: BookingRequested
-            BUS-->>H: SMS + email (queued)
+            BUS-->>H: in-app + email (queued)
             BS-->>T: 201 booking requested
         end
     end
     H->>API: POST /api/bookings/{id}/accept
     API->>BS: accept(booking)
-    BS->>DB: BEGIN; lock date; re-count accepted bookings
+    BS->>DB: BEGIN; lock date; re-count confirmed bookings and overlap
     BS->>PG: capture(amount)
-    BS->>DB: status = Accepted; COMMIT
-    BS->>BUS: BookingAccepted
-    BUS-->>T: notification, phone number revealed
+    alt capture failed or timed out
+        PG-->>BS: not successful
+        BS->>DB: payment = failed; booking not confirmed; COMMIT
+        BS-->>H: 402 payment failed
+    else captured
+        BS->>DB: booking = confirmed; payment = captured; COMMIT
+        BS->>BUS: BookingConfirmed
+        BUS-->>T: notification, contact details revealed
+    end
 ```
 
-### 5.2 Host cancels less than 24 hours before (UC-08)
+### 5.2 Host cancels a confirmed booking (UC-08)
+
+A host cancellation always refunds 100%. Less than 24 hours before the start, the tourist
+also gets alternative hosts.
 
 ```mermaid
 sequenceDiagram
@@ -341,23 +330,19 @@ sequenceDiagram
     participant RP as HostCancellationPolicy
     participant PG as PaymentGateway
     participant BUS as EventBus
-    participant SC as StrikeCounter
-    participant AS as AlternativeHostSuggester
+    participant AF as AlternativeHostFinder
     actor T as Tourist
 
-    H->>BS: cancel(booking, reason)
+    H->>BS: cancelByHost(booking, reason)
     BS->>RP: refundPercent(booking, now)
-    RP-->>BS: 100% (late_host_cancel = true if < 24 h)
+    RP-->>BS: 100%
     BS->>PG: refund(100%)
-    BS->>BUS: HostCancelledLate
-    par listeners
-        BUS->>SC: record strike (2nd in 30 days → suspend host)
-    and
-        BUS->>AS: find up to 3 hosts within 10 km, shared language, free at that time
-        AS-->>T: alternatives
-    and
-        BUS-->>T: cancellation + refund notification
+    BS->>BUS: BookingCancelled, RefundRequested
+    alt less than 24 h before the start
+        BUS->>AF: up to 3 verified hosts in the same city, free at that time
+        AF-->>T: alternatives, or "no host available"
     end
+    BUS-->>T: cancellation + refund notification
 ```
 
 ## 6. The AI-assisted component
@@ -368,8 +353,8 @@ reason tied to an input preference or host attribute.
 
 **How it works today (design, not yet built).** `MatchingService.search()`:
 
-1. Filter: only bookable hosts with a free slot on the date, a group size that fits, and at least one language in common with the tourist.
-2. Score = `0.4 × language + 0.3 × interests + 0.2 × proximity + 0.1 × rating`, where language = 1 if the host speaks the tourist's preferred language (else 0.5), interests = shared ÷ tourist's interests, proximity = `1 − distance ÷ 15 km`, rating = average ÷ 5 (new hosts count as 4.0 so they are not hidden).
+1. Filter: only `verified` hosts with a free slot on the date and a group size that fits. A shared language is a ranking factor, not a filter.
+2. Score = `0.4 × language + 0.3 × interests + 0.2 × proximity + 0.1 × rating`, where language = 1 if the host speaks the tourist's preferred language (else 0.5), interests = shared ÷ tourist's interests, proximity = `1 − distance ÷ 15 km` when both sides have coordinates, otherwise 1 for the same city and 0 for another city, rating = average ÷ 5 (unrated hosts count as 4.0 so they are not hidden).
 3. The two strongest criteria become the "why this host" tags (e.g. "speaks French · loves food"). Weights live in configuration.
 
 **What goes in / out.** In: tourist preferences (city, date, language, interests, group size, location) and host profile data. Out: ranked hosts + `whyMatched` tags (`GET /api/search`). No card data and no ID documents are ever used.
@@ -380,23 +365,17 @@ reason tied to an input preference or host attribute.
 
 ## 7. Known trade-offs / open questions
 
-**Document mismatches (SDD vs current SRS FV).** The SDD was written against SRS v1.0; SRS FV states that the previous 15 FR / 12 NFR set is superseded.
+**The SDD and SRS FV are reconciled.** The SDD was written against the first SRS, and SRS FV supersedes it.
+[ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md) records every decision (host states, payment flow, booking
+states, request expiry, refunds, alternative hosts, platform, messaging, notifications, time zone, and what is out
+of v1), and [`requirements/ID-mapping.md`](requirements/ID-mapping.md) maps the old ids. The design above already
+reflects those decisions.
 
-| Topic | SDD (this file) | SRS FV |
-|-------|-----------------|--------|
-| IDs | FR-01…FR-26 | FR-01…FR-25 (different meaning) |
-| Host states | applied / verified / active / suspended / rejected / banned | Pending / Verified / Rejected / Suspended |
-| Platform | Web only | Android, iOS and web (NFR-16) |
-| Payment | Authorise → capture on accept ([ADR 0003](decisions/0003-authorise-then-capture-with-locked-transactions.md)) | Confirm only after successful payment (FR-15) |
-| Alternatives | ≤ 3 hosts within 10 km | An available host in the same city (FR-17) |
-| Commission, strikes, disputes, payouts, reviews | Specified | Not specified / Candidate |
+**Still open** (owners and the default used meanwhile are in ADR 0004): tourist refund percentages; where ratings
+come from before reviews exist; whether a rule-based score counts as "AI-generated"; ID-evidence retention and legal
+basis; admin two-factor authentication; the payment provider ([ADR 0005](decisions/) once written); backup RPO and RTO
+and the load profile for "thousands" of users; whether to reissue the SDD as v1.1. Matching weights should also be
+confirmed with real users after the first usability test.
 
-**Open issues carried over from the SDD**
-
-- Choose the payment provider (authorise/capture/refund, international cards, payouts in TND) — decide in sprint 1.
-- Confirm matching weights with real users after the first usability test.
-- Whether a booking can span midnight (currently not allowed: experiences end the same day).
-
-**Open issues from SRS FV (§19)** — message-eligibility rule (FR-18), notification scope (FR-20), password-reset/session/role policies, calendar time zone and overlap boundaries, RPO/RTO for backups, load profile for "thousands" of concurrent users, and approval of Candidate features FR-21 to FR-25.
-
-**Trade-offs accepted.** The monolith scales as one unit, so translation is isolated on the queue. Microservices and a message broker were rejected as too heavy for a student team and risky for money and limits.
+**Trade-offs accepted.** The monolith scales as one unit, so translation is isolated on the queue. Microservices and a
+message broker were rejected as too heavy for a student team and risky for money and limits.
