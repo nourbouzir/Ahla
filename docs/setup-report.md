@@ -14,7 +14,6 @@
 
 | Member | GitHub username | Role |
 |--------|-----------------|------|
-| Mohamed Zouari | TODO (team) | TODO |
 | Salma Gzara | TODO (team) | TODO |
 | Nour Bouzir | TODO (team) | TODO |
 
@@ -40,7 +39,7 @@ decision is in [ADR 0003](decisions/0003-authorise-then-capture-with-locked-tran
 - **Merged PR screenshot:** TODO (team) — add `docs/img/merged-pr.png` and link it here.
 - **CI run (green) screenshot:** TODO (team) — add `docs/img/ci-green.png` and link it here.
 - **Branch protection on `main`:** TODO (team) — require a PR, 1 approval, and the **CI** status check.
-- **One merged PR per member:** TODO (team) — list the three PR links.
+- **One merged PR per member:** TODO (team) — list the two PR links.
 
 ## 5. How the AI assistants are configured
 

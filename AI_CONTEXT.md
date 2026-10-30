@@ -118,4 +118,4 @@ If a task touches one of these rows, ask first and record the answer in an ADR.
 
 ---
 
-_Last updated: 2026-10-30 by the AHLA team (Mohamed Zouari, Salma Gzara, Nour Bouzir). Review this file at the start of every work session._
+_Last updated: 2026-10-30 by the AHLA team (Salma Gzara, Nour Bouzir). Review this file at the start of every work session._

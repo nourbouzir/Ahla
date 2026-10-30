@@ -2,7 +2,7 @@
 
 > Book a local, not a tour: tourists in Tunisia spend a few hours with verified local hosts, matched by language, interests, location and rating.
 
-**Team:** Mohamed Zouari, Salma Gzara, Nour Bouzir
+**Team:** Salma Gzara, Nour Bouzir
 **Course:** CS 488 — AI-First Software Engineering
 **Status:** 🚧 In development (Lab 6: environment set up, implementation not started)
 
