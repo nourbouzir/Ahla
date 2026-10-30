@@ -286,7 +286,7 @@ sequenceDiagram
 
     T->>API: POST /api/bookings
     API->>BS: request(experience, date, start, group)
-    BS->>DB: BEGIN; lock host's bookings for the date
+    BS->>DB: BEGIN, lock host's bookings for the date
     BS->>BS: host verified? <2 confirmed? no overlap? group fits?
     alt rule violated
         BS-->>T: 409 host full / slot taken (reason)
@@ -297,7 +297,7 @@ sequenceDiagram
             BS->>DB: ROLLBACK
             BS-->>T: 402 payment could not be authorised
         else authorised
-            BS->>DB: INSERT booking (requested, expires in 12 h) + payment; COMMIT
+            BS->>DB: INSERT booking (requested, expires in 12 h) + payment, COMMIT
             BS->>BUS: BookingRequested
             BUS-->>H: in-app + email (queued)
             BS-->>T: 201 booking requested
@@ -305,14 +305,14 @@ sequenceDiagram
     end
     H->>API: POST /api/bookings/{id}/accept
     API->>BS: accept(booking)
-    BS->>DB: BEGIN; lock date; re-count confirmed bookings and overlap
+    BS->>DB: BEGIN, lock date, re-count confirmed bookings and overlap
     BS->>PG: capture(amount)
     alt capture failed or timed out
         PG-->>BS: not successful
-        BS->>DB: payment = failed; booking not confirmed; COMMIT
+        BS->>DB: payment = failed, booking not confirmed, COMMIT
         BS-->>H: 402 payment failed
     else captured
-        BS->>DB: booking = confirmed; payment = captured; COMMIT
+        BS->>DB: booking = confirmed, payment = captured, COMMIT
         BS->>BUS: BookingConfirmed
         BUS-->>T: notification, contact details revealed
     end
