@@ -1,5 +1,5 @@
 # =============================================================================
-# .gitignore — AHLA (PHP 8.3 / Laravel 11 + Vite assets).
+# .gitignore — AHLA (PHP 8.3 / Laravel 12 + Vite assets).
 # Golden rule: never commit secrets, build output, or dependency folders.
 # =============================================================================
 
@@ -24,7 +24,8 @@ Thumbs.db
 
 # --- Logs & temp -------------------------------------------------------------
 *.log
-logs/
+# Root only: storage/logs must stay in git (its .gitignore keeps the folder).
+/logs/
 tmp/
 .cache/
 coverage/
@@ -50,6 +51,10 @@ auth.json
 .php-cs-fixer.cache
 .phpstorm.meta.php
 _ide_helper.php
+.phpactor.json
+/.fleet
+/.nova
+/.zed
 
 # Uploaded user files — ID documents must NEVER reach git
 /storage/app/private/

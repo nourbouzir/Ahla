@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-AHLA is a **layered modular monolith** built with Laravel 11 (PHP 8.3) and MySQL 8
+AHLA is a **layered modular monolith** built with Laravel 12 (PHP 8.3) and MySQL 8
 (decision: [ADR 0002](decisions/0002-use-laravel-modular-monolith.md)).
 Tourists and hosts use a mobile-first web app (Blade + plain JavaScript, English /
 French / Arabic with right-to-left layout); admins use an admin panel. Both call
@@ -37,7 +37,7 @@ flowchart TB
         ADM["Admin panel"]
     end
 
-    subgraph Application["Application: Laravel 11 modules"]
+    subgraph Application["Application: Laravel 12 modules"]
         AUTH[Auth & Access]
         VER[Host Verification]
         EXP[Experience & Availability]

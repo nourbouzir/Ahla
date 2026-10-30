@@ -1,7 +1,8 @@
-# 2. Use a layered modular monolith on Laravel 11 + MySQL 8
+# 2. Use a layered modular monolith on Laravel 12 + MySQL 8
 
 - **Status:** Accepted
 - **Date:** 2026-10-30
+- **Amended:** 2026-10-30 - the framework is **Laravel 12**, not 11. When creating the skeleton, Composer refused every Laravel 11 release because Packagist security advisories (for example CVE-2026-114509, a critical TokenGuard bypass) are listed against all 11.x versions, while Laravel 12 installs cleanly. Everything else in this decision is unchanged.
 
 ## Context
 
@@ -25,7 +26,7 @@ Alternatives considered in the SDD (§2.2–2.3):
 ## Decision
 
 Build AHLA as a **layered modular monolith** (MVC) with object-oriented domain
-classes, using **Laravel 11 (PHP 8.3)** and **MySQL 8 (InnoDB)**:
+classes, using **Laravel 12 (PHP 8.3)** and **MySQL 8 (InnoDB)**:
 
 - One codebase and one database; modules (Booking, Matching, Verification, Payment, …) talk through each other's services or domain events, never through each other's tables.
 - Booking request/accept run in a single transaction that locks the host's bookings for the date (`SELECT … FOR UPDATE`) before counting.
