@@ -14,7 +14,7 @@ Tourists visiting Tunisia struggle to find a trustworthy local who speaks their 
 
 ## Tech stack
 
-PHP 8.3 + Laravel 11 (Blade, plain JavaScript, Leaflet/OpenStreetMap), MySQL 8, Composer + npm (Vite assets), PHPUnit. Payment gateway and translation API providers are still to be chosen. See [ADR 0002](docs/decisions/0002-use-laravel-modular-monolith.md). (Keep in sync with `AI_CONTEXT.md`.)
+PHP 8.3 + Laravel 12 (Blade, plain JavaScript, Leaflet/OpenStreetMap), MySQL 8, Composer + npm (Vite assets), PHPUnit. Payment gateway and translation API providers are still to be chosen. See [ADR 0002](docs/decisions/0002-use-laravel-modular-monolith.md). (Keep in sync with `AI_CONTEXT.md`.)
 
 ## Getting started
 
@@ -43,11 +43,12 @@ php artisan migrate
 php artisan serve
 php artisan queue:work
 
-# 7. Run the tests
-php artisan test
+# 7. Run the tests and the style check (same as CI; tests need no MySQL)
+composer test
+composer lint
 ```
 
-> **Sprint 1 note:** the Laravel application skeleton is not committed yet. In the first implementation sprint one teammate runs `composer create-project laravel/laravel` into this repo (see [docs/setup.md](docs/setup.md)); until `composer.json` exists, steps 4–7 do not apply and CI only runs the docs reminder.
+> **Where we are:** the app is a Laravel 12 skeleton with nine empty feature modules under `app/Modules/` (see [docs/setup.md](docs/setup.md) for how modules work). Features are built issue by issue; see [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) once it is merged.
 
 ## Project structure
 
@@ -63,8 +64,8 @@ php artisan test
 .githooks
 .githooks/pre-push
 .github
-.github/copilot-instructions.md
 .github/ISSUE_TEMPLATE
+.github/copilot-instructions.md
 .github/pull_request_template.md
 .github/workflows
 .gitignore
@@ -74,21 +75,73 @@ php artisan test
 AI_CONTEXT.md
 CLAUDE.md
 CONTRIBUTING.md
-docs
-docs/architecture.md
-docs/CHANGELOG.md
-docs/decisions
-docs/PROJECT_PLAN.md
-docs/README.md
-docs/requirements
-docs/setup.md
-docs/setup-report.md
 LICENSE
 README.md
+app
+app/Http
+app/Models
+app/Modules
+app/Providers
+artisan
+bootstrap
+bootstrap/app.php
+bootstrap/cache
+bootstrap/providers.php
+composer.json
+composer.lock
+config
+config/app.php
+config/auth.php
+config/cache.php
+config/database.php
+config/filesystems.php
+config/logging.php
+config/mail.php
+config/queue.php
+config/services.php
+config/session.php
+database
+database/.gitignore
+database/factories
+database/migrations
+database/seeders
+docs
+docs/CHANGELOG.md
+docs/README.md
+docs/architecture.md
+docs/decisions
+docs/requirements
+docs/setup-report.md
+docs/setup.md
+package.json
+phpunit.xml
+public
+public/.htaccess
+public/favicon.ico
+public/index.php
+public/robots.txt
+resources
+resources/css
+resources/js
+resources/views
+routes
+routes/api.php
+routes/console.php
+routes/web.php
 scripts
 scripts/check-docs.sh
 scripts/setup.sh
 scripts/update-structure.sh
+storage
+storage/app
+storage/framework
+storage/logs
+tests
+tests/Feature
+tests/Fixtures
+tests/TestCase.php
+tests/Unit
+vite.config.js
 ```
 <!-- STRUCTURE:END -->
 

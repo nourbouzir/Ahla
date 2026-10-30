@@ -21,7 +21,7 @@ All members must be added under *Settings → Collaborators*.
 
 ## 2. Chosen stack
 
-PHP 8.3 + Laravel 11, MySQL 8, Blade + plain JavaScript + Leaflet, PHPUnit.
+PHP 8.3 + Laravel 12, MySQL 8, Blade + plain JavaScript + Leaflet, PHPUnit.
 **Why:** a layered modular monolith keeps the money and limit rules (max 2 confirmed
 bookings per host per day, no overlap, payment tied to booking) in one database
 transaction, and the team already knows Laravel — see
@@ -63,7 +63,7 @@ requires a unit test, and mentions the `audit_log` entry. A generic answer means
 - [ ] Create the GitHub repo, push, add collaborators, protect `main` (Steps 1 and 5 of the lab).
 - [ ] Each member: clone, run `./scripts/setup.sh`, create `.env`, confirm `git status` does not list it.
 - [ ] Each member: open, review and merge one small PR; capture the CI screenshot.
-- [ ] Create the Laravel skeleton (one PR) — instructions in `docs/setup.md`.
+- [x] Create the Laravel skeleton (one PR) — issue #1; Laravel 12, nine modules, `composer test` / `composer lint`. Pending review and merge.
 - [ ] Reconcile the SDD with SRS FV (requirement IDs, host states, platform, payment flow, alternatives rule); see `docs/architecture.md` §7.
 - [ ] Choose the payment provider (must support authorise / capture / refund and, if payouts stay in scope, payouts in TND).
 - [ ] Answer the open questions in SRS FV §19 (message eligibility, notification scope, time zone, RPO/RTO, Candidate features).
