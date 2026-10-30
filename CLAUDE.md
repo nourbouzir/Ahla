@@ -21,8 +21,9 @@ just adds Claude-specific working notes.
 ```bash
 # install deps:   composer install && npm install
 # run the app:    php artisan serve         (queue: php artisan queue:work)
-# run tests:      php artisan test
-# lint/format:    ./vendor/bin/pint         (Laravel Pint, PSR-12) — add via composer require --dev laravel/pint if missing
+# run tests:      composer test             (in-memory SQLite, no MySQL needed)
+# lint:           composer lint             (Laravel Pint, check only; CI runs this)
+# fix style:      composer lint:fix
 # migrate:        php artisan migrate --seed
 # run schedule:   php artisan schedule:work
 ```

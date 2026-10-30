@@ -5,7 +5,7 @@
 # runs if its manifest file exists, so CI stays green on a repo that has docs
 # but no code yet.
 #
-# AHLA is a Laravel 11 / PHP 8.3 project: the PHP block starts running as soon
+# AHLA is a Laravel 12 / PHP 8.3 project: the PHP block starts running as soon
 # as composer.json is committed (sprint 1).
 
 name: CI
@@ -42,6 +42,11 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+
+      - name: Check PHP code style
+        # Laravel Pint in check-only mode; fix locally with `composer lint:fix`.
+        if: ${{ hashFiles('composer.json') != '' }}
+        run: composer lint
 
       - name: Run PHP tests
         # Tests use an in-memory SQLite database (set in phpunit.xml), so CI

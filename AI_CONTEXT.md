@@ -28,7 +28,7 @@ Link to your design docs so the assistant can go deeper:
 | Layer       | Choice                                                                 |
 |-------------|------------------------------------------------------------------------|
 | Language(s) | PHP 8.3; plain JavaScript (no SPA framework); Blade templates; CSS with RTL support |
-| Framework   | Laravel 11 (routing, Eloquent ORM, events, queues, scheduler, Gates)  |
+| Framework   | Laravel 12 (routing, Eloquent ORM, events, queues, scheduler, Gates)  |
 | Database    | MySQL 8 (InnoDB); encrypted private disk for ID documents             |
 | Package mgr | Composer (PHP), npm (front-end assets only, via Vite)                 |
 | Testing     | PHPUnit + Laravel feature tests; k6 (load); SonarCloud (quality)      |
@@ -39,18 +39,21 @@ Link to your design docs so the assistant can go deeper:
 
 ## 3. Project structure
 
-The repo is the Laravel application root (created in sprint 1 — see `docs/setup.md`).
+The repo is the Laravel application root (Laravel 12 skeleton, issue #1 — see `docs/setup.md`).
 Modules are groups of controller + service + model + repository; modules never touch another module's tables directly.
 
-- `app/Modules/<Module>/` — one folder per module: `Auth`, `Verification`, `Experience`, `Matching`, `Booking`, `Payment`, `Messaging`, `Trust`, `Notification`, `Admin`
+- `app/Modules/<Module>/` — one self-contained folder per module: `Auth`, `Verification`, `Experience`, `Matching`, `Booking`, `Payment`, `Messaging`, `Notification`, `Admin` (no `Trust` module in v1: reviews, strikes and disputes are out of v1, ADR 0004)
+- `app/Modules/<Module>/<Module>ModuleServiceProvider.php` — extends `App\Modules\ModuleServiceProvider`, which loads the module's own `routes/web.php` (web group), `routes/api.php` (api group, `/api` prefix), `Database/Migrations/`, `Views/` (`view('booking::name')`) and `lang/{en,fr,ar}/` (`__('booking::messages.key')`). Nothing outside the module folder is edited to add a route, migration, view or string.
+- `app/Modules/<Module>/Database/Seeders/<Module>DatabaseSeeder.php` — module seed data; `database/seeders/DatabaseSeeder.php` calls them in order and is not edited per module.
+- `app/Modules/Modules.php` — the single list of modules (provider registration and seeding order). Adding a module = copy a module folder + add its name there; `tests/Feature/ModulesTest.php` fails if the two disagree.
 - `app/Modules/Booking/States/`, `app/Modules/Verification/States/` — State pattern classes (`BookingState`, `HostState`)
 - `app/Modules/Matching/Strategies/` — `MatchingStrategy` implementations
 - `app/Modules/Payment/Policies/` — `RefundPolicy` implementations; `app/Modules/Payment/Gateways/` — `PaymentGateway` adapters
 - `app/Events/`, `app/Listeners/` — domain events and listeners (observer pattern)
-- `app/Jobs/` — scheduled/queued jobs (`ExpireRequests`, `SendReminders`, `AutoComplete`, `ReleasePayouts`, `PublishReviews`, `PurgeIdDocuments`)
-- `resources/views/`, `resources/lang/{en,fr,ar}/` — Blade views and language files
-- `routes/api.php`, `routes/web.php` — JSON endpoints under `/api/*` and pages
-- `database/migrations/`, `database/seeders/` — schema and seed data
+- `app/Jobs/` — scheduled/queued jobs (v1: `ExpireRequests`, `AutoComplete`, `PurgeIdDocuments`; reminders, payouts and review publication are out of v1)
+- `resources/views/`, `resources/css/`, `resources/js/` — only the shared layout and assets; module screens live in `app/Modules/<Module>/Views/`
+- `routes/web.php`, `routes/api.php` — app-wide routes only (health check etc.); feature routes live in the module's own `routes/` folder
+- `database/migrations/`, `database/seeders/` — app-wide schema and the root seeder; module tables live in `app/Modules/<Module>/Database/Migrations/`
 - `tests/Unit/`, `tests/Feature/` — PHPUnit tests
 - `docs/` — requirements, architecture, ADRs, changelog, setup report
 - `scripts/` — helper scripts
@@ -69,9 +72,9 @@ Modules are groups of controller + service + model + repository; modules never t
 - **Booking concurrency:** request and accept both run in one DB transaction that locks the host's bookings for that date (`SELECT … FOR UPDATE`) and re-counts before writing. Never check-then-insert outside that transaction.
 - **Payments:** authorise on request, capture on host acceptance, release on expiry. Never store card data — only the gateway reference. A failed authorisation rolls the whole booking back.
 - **Status changes:** every host / booking / payment status change is written to `audit_log` (actor, reason, timestamp).
-- **Privacy:** ID documents go on the encrypted private disk, readable by admins only. Phone numbers stay hidden until a booking is accepted.
-- **Localisation:** no hard-coded user-facing text; use `resources/lang/{en,fr,ar}`. Layouts must work right-to-left for Arabic and from 360 px wide.
-- **Slow work** (email/SMS, translation, alternative-host suggestions) goes on the queue via events/listeners, not inline in a request.
+- **Privacy:** ID documents go on the encrypted private disk, readable by admins only. Phone numbers and email stay hidden until a booking is `confirmed`.
+- **Localisation:** no hard-coded user-facing text; use the module's `lang/{en,fr,ar}` files (`__('booking::messages.key')`). Layouts must work right-to-left for Arabic and from 360 px wide.
+- **Slow work** (email, translation, alternative-host suggestions) goes on the queue via events/listeners, not inline in a request.
 
 ## 5. What NOT to do
 
@@ -92,7 +95,7 @@ The SDD was written against an older SRS. **SRS FV is the baseline: cite its FR 
 - **Rules:** a request expires after 12 h. The 2-per-day limit (BR-03) and the overlap check (BR-04) count `confirmed` bookings only. Intervals are half-open `[start, end)`, so a booking may start when another ends; no booking crosses midnight; the time zone and "calendar day" are Africa/Tunis.
 - **Cancellation:** a host cancelling always refunds 100%; less than 24 h before the start the tourist also gets up to 3 `verified` hosts in the **same city** who are free at that time (FR-17). A tourist cancelling gets 100% / 50% / 0% (48 h / 24 h) from config.
 - **Platform:** responsive web app only in v1; mobile browsers satisfy NFR-16. **Messaging:** one conversation per booking, from `requested`, between its tourist and host; contact details hidden until `confirmed`. **Notifications:** in-app + email; no SMS, no reminders.
-- **Scheduled jobs in v1:** `ExpireRequests`, `AutoComplete`, `PurgeIdDocuments` only (the longer job list and the `Trust` module in §3 are from the SDD and are not built).
+- **Scheduled jobs in v1:** `ExpireRequests`, `AutoComplete`, `PurgeIdDocuments` only.
 - **Out of v1:** commission and payouts, strikes and automatic suspension, disputes, reviews and ratings, reports, reminders, Candidate FR-21 to FR-25.
 - **Still open, with a default (ADR 0004 table):** tourist refund percentages, where ratings come from before reviews exist, whether rule-based ranking counts as "AI-generated", ID-evidence retention, admin MFA, the payment provider. Use the default and say so in the PR; do not decide it silently.
 
