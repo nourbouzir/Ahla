@@ -15,6 +15,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - ADR 0002 (modular monolith on Laravel) and ADR 0003 (authorise-then-capture payments, proposed).
 - PHP/Laravel job in CI (runs once `composer.json` exists); Laravel `.env.example`.
 - `docs/setup-report.md` (Lab 6 report).
+- `.github/CODEOWNERS` and a "Working in parallel" section in `CONTRIBUTING.md`: module ownership, review, rebase and merge rules for the two of us (issue #3, P0-3).
 
 ### Changed
 - `.gitignore`, `.editorconfig` and recommended VS Code extensions narrowed to the PHP/Node stack.
