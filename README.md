@@ -148,6 +148,7 @@ vite.config.js
 ## Documentation
 
 - [Architecture](docs/architecture.md) — how the system is put together
+- [Project plan](docs/PROJECT_PLAN.md) — phases, issues, who works on what, and how we merge
 - [Requirements and design (SRS, SDD)](docs/requirements/) — source documents
 - [Setup details](docs/setup.md) — full environment setup
 - [Decisions (ADRs)](docs/decisions/) — why we chose what we chose

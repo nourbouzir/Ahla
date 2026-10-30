@@ -19,6 +19,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - ADR 0002 (modular monolith on Laravel) and ADR 0003 (authorise-then-capture payments, proposed).
 - PHP/Laravel job in CI (runs once `composer.json` exists); Laravel `.env.example`.
 - `docs/setup-report.md` (Lab 6 report).
+- `docs/PROJECT_PLAN.md`: 6 phases split into 43 GitHub issues, assigned to Nour and Salma with hand-offs and merge rules.
 
 ### Changed
 - Framework is Laravel 12 instead of 11: Composer blocks every Laravel 11 release because of security advisories (see ADR 0002).

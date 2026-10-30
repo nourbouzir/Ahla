@@ -9,6 +9,7 @@ teammates (and your grader) will thank you.
 | [setup.md](setup.md) | Full steps to run the project locally | the setup steps change |
 | [decisions/](decisions/) | Architecture Decision Records (ADRs) — one file per real decision | you make a notable choice |
 | [CHANGELOG.md](CHANGELOG.md) | Human-readable history of what changed | behavior changes |
+| [PROJECT_PLAN.md](PROJECT_PLAN.md) | Phases, issue list, ownership, hand-offs and merge rules | scope, owners or phases change |
 | [requirements/](requirements/) | Source documents: SRS FV (current), SRS v1.0 (superseded), SDD | requirements or design are revised |
 | [setup-report.md](setup-report.md) | Lab 6 setup report | the repo setup changes |
 
