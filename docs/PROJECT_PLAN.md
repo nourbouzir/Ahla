@@ -50,7 +50,7 @@ Total: **43 issues** - Nour 22, Salma 21.
 
 | Issue | Code | Title | Owner | Size | Priority | Depends on |
 |-------|------|-------|-------|------|----------|------------|
-| [#1](https://github.com/nourbouzir/Ahla/issues/1) | P0-1 | Create the Laravel 11 skeleton with module layout and green CI | Nour | M | must | - |
+| [#1](https://github.com/nourbouzir/Ahla/issues/1) | P0-1 | Create the Laravel 12 skeleton with module layout and green CI | Nour | M | must | - |
 | [#3](https://github.com/nourbouzir/Ahla/issues/3) | P0-3 | Team workflow: CODEOWNERS, review rules and conflict rules | Nour | S | must | - |
 | [#5](https://github.com/nourbouzir/Ahla/issues/5) | P0-5 | Schema: users, languages, host profiles, verification, experiences, availability | Nour | M | must | #1 |
 
