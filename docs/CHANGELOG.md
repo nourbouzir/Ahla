@@ -8,6 +8,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ## [Unreleased]
 
 ### Added
+- Identity and catalog schema: users get `role`, `phone`, `preferred_language`; new tables `user_languages`, `user_interests`, `host_profiles`, `verification_requests`, `experiences`, `availability`, `blocked_dates`, with models, the `Role` and `HostStatus` enums and factories (issue #5, P0-5).
 - `GET /api/health` (JSON `{"status":"ok"}`) with a feature test; `routes/api.php` is registered in `bootstrap/app.php` (no Sanctum needed).
 - `composer test` and `composer lint` / `composer lint:fix` (Laravel Pint); CI now runs the lint step before the tests (issue #1, P0-1).
 - Module layout: nine self-contained modules under `app/Modules/` (Auth, Verification, Experience, Matching, Booking, Payment, Messaging, Notification, Admin), each with its own `ModuleServiceProvider`, routes, migrations, views, language files and seeder; `App\Modules\Modules` is the single module list (issue #1, P0-1).
