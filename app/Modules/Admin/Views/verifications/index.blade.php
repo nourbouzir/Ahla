@@ -6,7 +6,8 @@
             <a class="underline {{ $status === $s ? 'font-bold' : '' }}" @if ($status === $s) aria-current="page" @endif
                 href="{{ route('admin.verifications.index', ['status' => $s]) }}">{{ __("admin::messages.filter_$s") }}</a>
         @endforeach
-        <a class="ms-auto underline" href="{{ route('admin.audit') }}">{{ __('admin::messages.audit') }}</a>
+        <a class="ms-auto underline" href="{{ route('admin.bookings.index') }}">{{ __('admin::messages.bookings') }}</a>
+        <a class="underline" href="{{ route('admin.audit') }}">{{ __('admin::messages.audit') }}</a>
     </nav>
 
     <div class="mt-4 overflow-x-auto">

@@ -31,6 +31,7 @@ class User extends Authenticatable implements HasLocalePreference
         'password',
         'phone',
         'preferred_language',
+        'share_phone',
     ];
 
     /**
@@ -55,6 +56,7 @@ class User extends Authenticatable implements HasLocalePreference
             'password' => 'hashed',
             'role' => Role::class,
             'email_notifications' => 'boolean',
+            'share_phone' => 'boolean',
         ];
     }
 

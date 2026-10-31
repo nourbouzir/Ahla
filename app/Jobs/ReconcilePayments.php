@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Modules\Booking\Enums\BookingStatus;
 use App\Modules\Booking\Models\Booking;
+use App\Modules\Booking\Services\BookingService;
 use App\Modules\Payment\Enums\PaymentStatus;
 use App\Modules\Payment\Models\Payment;
 use App\Modules\Payment\Services\PaymentService;
@@ -15,6 +16,8 @@ use Throwable;
 
 /**
  * Safety net for payments that did not finish their last step:
+ *  0. A request whose payment the gateway already captured (its answer was lost) is
+ *     confirmed, or refunded and declined if the slot is gone.
  *  1. A cancelled booking whose refund failed gets the refund retried.
  *  2. A reservation still held for a booking that is already declined, expired
  *     or cancelled is released.
@@ -24,10 +27,23 @@ class ReconcilePayments implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
-    /** @return array{refunds: int, releases: int} */
-    public function handle(RefundService $refunds, PaymentService $payments): array
+    /** @return array{refunds: int, releases: int, recovered: int} */
+    public function handle(RefundService $refunds, PaymentService $payments, ?BookingService $bookings = null): array
     {
-        $result = ['refunds' => 0, 'releases' => 0];
+        $bookings ??= app(BookingService::class);
+        $result = ['refunds' => 0, 'releases' => 0, 'recovered' => 0];
+
+        // 0. Money captured at the gateway whose answer we never received: ask the gateway and finish the job.
+        Booking::query()->with('payment')
+            ->where('status', BookingStatus::Requested->value)
+            ->whereHas('payment', fn ($q) => $q->where('status', PaymentStatus::Authorised->value)->where('updated_at', '<', now()->subMinute()))
+            ->each(function (Booking $booking) use ($bookings, &$result) {
+                try {
+                    $result['recovered'] += $bookings->recoverPaidRequest($booking) ? 1 : 0;
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            });
 
         Booking::query()->with(['payment', 'canceller'])
             ->where('status', BookingStatus::Cancelled->value)

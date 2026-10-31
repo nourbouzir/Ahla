@@ -4,6 +4,7 @@ return [
     'verifications' => 'طلبات المضيفين',
     'filter' => 'تصفية',
     'filter_open' => 'مفتوحة', 'filter_decided' => 'تم البت فيها', 'filter_all' => 'الكل',
+    'bookings' => 'الحجوزات والمدفوعات', 'col_tourist' => 'الضيف', 'col_host' => 'المضيف', 'col_booking' => 'الحجز', 'col_payment' => 'الدفع',
     'audit' => 'سجل التدقيق',
     'host' => 'المضيف', 'city' => 'المدينة', 'request_status' => 'الطلب', 'sent' => 'أُرسل', 'open' => 'فتح',
     'none' => 'لا شيء هنا.',

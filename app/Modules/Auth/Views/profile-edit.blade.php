@@ -7,6 +7,7 @@
         <x-input name="name" :label="__('auth::messages.name')" :value="$user->name" autocomplete="name" required />
         <x-input name="phone" type="tel" :label="__('auth::messages.phone')" :value="$user->phone" autocomplete="tel" />
         <p class="mt-1 text-sm text-slate-600">{{ __('auth::messages.phone_hint') }}</p>
+        <label class="mt-3 flex items-center gap-2"><input type="checkbox" name="share_phone" value="1" @checked(old('share_phone', $user->share_phone))> {{ __('auth::messages.share_phone') }}</label>
 
         <div class="mt-4">
             <label class="label" for="preferred_language">{{ __('auth::messages.preferred_language') }}</label>

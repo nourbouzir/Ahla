@@ -114,6 +114,18 @@ class PaymentService
         );
     }
 
+    /** What the provider itself says about this payment (used to recover after a lost answer). */
+    public function gatewayStatus(Payment $payment): PaymentStatus
+    {
+        try {
+            return $this->gateway->status((string) $payment->gateway_ref);
+        } catch (GatewayTimeoutException $e) {
+            throw new PaymentFailedException('The payment gateway timed out.', 0, $e);
+        } catch (\InvalidArgumentException $e) {
+            throw new PaymentFailedException('The gateway does not know this payment.', 0, $e);
+        }
+    }
+
     /**
      * A status reported by the provider's webhook. Only forward moves are
      * accepted; repeating the current status is a harmless no-op.

@@ -50,10 +50,11 @@ class ProfileController extends Controller
             'city' => [Rule::requiredIf($isHost), 'nullable', Rule::in(array_keys(config('ahla.cities')))],
         ]);
 
-        DB::transaction(function () use ($user, $data, $isHost) {
+        DB::transaction(function () use ($user, $data, $isHost, $request) {
             $user->update([
                 'name' => $data['name'],
                 'phone' => $data['phone'] ?? null,
+                'share_phone' => $request->boolean('share_phone'),
                 'preferred_language' => $data['preferred_language'],
             ]);
 
@@ -93,6 +94,7 @@ class ProfileController extends Controller
         return view('auth::profile-show', [
             'user' => $user->load(['languages', 'interests', 'hostProfile']),
             'showContact' => $this->visibility->canSeeContact($request->user(), $user),
+            'showPhone' => $this->visibility->canSeePhone($request->user(), $user),
         ]);
     }
 }

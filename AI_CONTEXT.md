@@ -118,4 +118,4 @@ The SDD was written against an older SRS. **SRS FV is the baseline: cite its FR 
 
 ---
 
-_Last updated: 2026-10-30 by the AHLA team (Salma Gzara, Nour Bouzir). Review this file at the start of every work session._
+_Last updated: 2026-10-31 by the AHLA team (Salma Gzara, Nour Bouzir). Review this file at the start of every work session._

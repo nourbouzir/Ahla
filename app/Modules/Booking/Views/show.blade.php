@@ -26,7 +26,9 @@
             @endif
             @if ($canSeeContact)
                 <div><dt class="label">{{ __('auth::messages.email') }}</dt><dd>{{ $other->email }}</dd></div>
-                <div><dt class="label">{{ __('auth::messages.phone') }}</dt><dd>{{ $other->phone ?: '-' }}</dd></div>
+                @if ($other->share_phone || auth()->user()->role->value === 'admin')
+                    <div><dt class="label">{{ __('auth::messages.phone') }}</dt><dd>{{ $other->phone ?: '-' }}</dd></div>
+                @endif
             @else
                 <p class="text-sm text-slate-600">{{ __('booking::messages.contact_hidden') }}</p>
             @endif
