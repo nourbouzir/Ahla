@@ -23,7 +23,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - ADR 0002 (modular monolith on Laravel) and ADR 0003 (authorise-then-capture payments, proposed).
 - PHP/Laravel job in CI (runs once `composer.json` exists); Laravel `.env.example`.
 - `docs/setup-report.md` (Lab 6 report).
-- `docs/PROJECT_PLAN.md`: 6 phases split into 43 GitHub issues, assigned to Nour and Salma with hand-offs and merge rules.
+- `.github/CODEOWNERS` and a "Working in parallel" section in `CONTRIBUTING.md`: module ownership, review, rebase and merge rules for the two of us (issue #3, P0-3).
 
 ### Changed
 - Tuned the discovery, profile, map, and chat layouts for phone-sized screens, larger touch targets, safe areas, and readable mobile text.
