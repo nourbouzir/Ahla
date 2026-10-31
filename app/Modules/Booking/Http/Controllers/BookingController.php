@@ -9,7 +9,9 @@ use App\Modules\Booking\Exceptions\BookingRuleViolation;
 use App\Modules\Booking\Models\Booking;
 use App\Modules\Booking\Services\BookingService;
 use App\Modules\Experience\Models\Experience;
+use App\Modules\Payment\Enums\PaymentStatus;
 use App\Modules\Payment\Exceptions\PaymentFailedException;
+use App\Modules\Payment\Services\RefundService;
 use App\Modules\Verification\Enums\HostStatus;
 use App\Modules\Verification\Models\HostProfile;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +20,7 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly BookingService $bookings) {}
+    public function __construct(private readonly BookingService $bookings, private readonly RefundService $refunds) {}
 
     public function create(Experience $experience): View
     {
@@ -70,7 +72,14 @@ class BookingController extends Controller
             && $request->user()->id === $booking->tourist_id
             && $booking->cancelled_at->diffInHours($this->bookings->startsAt($booking), false) < 24;
 
+        $refundPending = false;
+        if ($booking->status === BookingStatus::Cancelled && $booking->payment?->status === PaymentStatus::Captured) {
+            $owed = $this->refunds->policyFor($booking, $booking->canceller)->refundAmount($booking, (string) $booking->payment->amount, $booking->cancelled_at);
+            $refundPending = bccomp($owed, '0', 3) > 0;
+        }
+
         return view('booking::show', [
+            'refundPending' => $refundPending,
             'booking' => $booking,
             'viewerIsHost' => $request->user()->id === $booking->host_id,
             'alternatives' => $showAlternatives
@@ -92,8 +101,12 @@ class BookingController extends Controller
             return back()->withErrors(['booking' => __('booking::messages.errors.refund_failed')]);
         }
 
-        return redirect()->route('bookings.show', $booking)
-            ->with('status', __('booking::messages.cancelled', ['amount' => $result['refund']]));
+        return redirect()->route('bookings.show', $booking)->with(
+            'status',
+            $result['refund_pending']
+                ? __('booking::messages.cancelled_refund_pending')
+                : __('booking::messages.cancelled', ['amount' => $result['refund']]),
+        );
     }
 
     /** Only published experiences of verified hosts exist for tourists. */

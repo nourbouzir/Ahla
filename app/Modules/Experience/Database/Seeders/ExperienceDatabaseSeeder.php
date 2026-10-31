@@ -3,7 +3,7 @@
 namespace App\Modules\Experience\Database\Seeders;
 
 use App\Modules\Experience\Models\Experience;
-use App\Modules\Verification\Services\HostDirectory;
+use App\Modules\Verification\Models\HostProfile;
 use Illuminate\Database\Seeder;
 
 class ExperienceDatabaseSeeder extends Seeder
@@ -67,7 +67,7 @@ class ExperienceDatabaseSeeder extends Seeder
         ];
 
         foreach ($experiences as $displayName => $listings) {
-            $host = app(HostDirectory::class)->findByDisplayName($displayName);
+            $host = HostProfile::query()->where('display_name', $displayName)->firstOrFail();
 
             foreach ($listings as $listing) {
                 Experience::updateOrCreate(

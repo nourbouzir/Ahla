@@ -7,6 +7,8 @@ return [
     'requested' => 'Request sent. The host has 12 hours to answer.',
     'accepted' => 'Booking confirmed and paid.', 'declined' => 'Request declined.',
     'cancelled' => 'Booking cancelled. Refunded: :amount TND.',
+    'cancelled_refund_pending' => 'Booking cancelled. Your refund could not be sent right now and will be retried automatically.',
+    'refund_in_progress' => 'Your refund is being processed.',
     'none' => 'No bookings yet.', 'waiting' => 'Waiting for your answer', 'no_requests' => 'No pending requests.', 'all' => 'All bookings',
     'people' => ':n people', 'answer_before' => 'Answer before', 'accept' => 'Accept', 'decline' => 'Decline',
     'tourist' => 'Guest', 'host' => 'Host', 'when' => 'When', 'group' => 'People', 'meeting' => 'Meeting point', 'price' => 'Price',

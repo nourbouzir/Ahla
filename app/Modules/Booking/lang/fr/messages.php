@@ -7,6 +7,8 @@ return [
     'requested' => 'Demande envoyée. L’hôte a 12 heures pour répondre.',
     'accepted' => 'Réservation confirmée et payée.', 'declined' => 'Demande refusée.',
     'cancelled' => 'Réservation annulée. Remboursé : :amount TND.',
+    'cancelled_refund_pending' => 'Réservation annulée. Le remboursement n’a pas pu être envoyé pour le moment ; il sera retenté automatiquement.',
+    'refund_in_progress' => 'Votre remboursement est en cours de traitement.',
     'none' => 'Aucune réservation.', 'waiting' => 'En attente de votre réponse', 'no_requests' => 'Aucune demande en attente.', 'all' => 'Toutes les réservations',
     'people' => ':n personnes', 'answer_before' => 'Répondre avant', 'accept' => 'Accepter', 'decline' => 'Refuser',
     'tourist' => 'Invité', 'host' => 'Hôte', 'when' => 'Quand', 'group' => 'Personnes', 'meeting' => 'Point de rendez-vous', 'price' => 'Prix',

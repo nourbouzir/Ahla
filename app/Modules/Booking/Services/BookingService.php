@@ -2,6 +2,7 @@
 
 namespace App\Modules\Booking\Services;
 
+use App\Contracts\Bookings\HostSchedule;
 use App\Contracts\Hosts\AlternativeHostFinder;
 use App\Contracts\Hosts\AvailabilityChecker;
 use App\Contracts\Hosts\HostEligibility;
@@ -16,6 +17,7 @@ use App\Modules\Booking\Exceptions\BookingRuleViolation;
 use App\Modules\Booking\Models\Booking;
 use App\Modules\Booking\States\BookingState;
 use App\Modules\Experience\Models\Experience;
+use App\Modules\Payment\Exceptions\PaymentFailedException;
 use App\Modules\Payment\Services\PaymentService;
 use App\Modules\Payment\Services\RefundService;
 use Carbon\CarbonImmutable;
@@ -33,7 +35,7 @@ use Illuminate\Support\Facades\DB;
  * host's confirmed bookings and only then writes. Never check-then-insert
  * outside this transaction.
  */
-class BookingService
+class BookingService implements HostSchedule
 {
     /** At most this many confirmed bookings per host per calendar day (FR-13). */
     public const DAILY_LIMIT = 2;
@@ -159,7 +161,7 @@ class BookingService
         });
     }
 
-    /** @return array{booking: Booking, refund: string, alternatives: Collection<int, int>} */
+    /** @return array{booking: Booking, refund: string, refund_pending: bool, alternatives: Collection<int, int>} */
     public function cancel(Booking $booking, User $actor, ?string $reason = null): array
     {
         return DB::transaction(function () use ($booking, $actor, $reason) {
@@ -177,7 +179,18 @@ class BookingService
                 'cancelled_by' => $actor->id,
                 'cancellation_reason' => $reason,
             ]);
-            $refund = $this->refunds->refundCancelledBooking($locked->load('payment'), $actor);
+            // A refund that fails never undoes the cancellation: the booking stays cancelled and
+            // the ReconcilePayments job retries the refund until it goes through.
+            $refundPending = false;
+
+            try {
+                $refund = $this->refunds->refundCancelledBooking($locked->load('payment'), $actor);
+            } catch (PaymentFailedException $e) {
+                $refund = '0.000';
+                $refundPending = true;
+                report($e);
+            }
+
             $this->move($locked, BookingStatus::Cancelled, $actor, $reason ?? 'cancelled');
 
             // A host cancelling less than 24 h before the start also gets up to 3 alternatives (FR-17).
@@ -188,7 +201,7 @@ class BookingService
 
             BookingCancelled::dispatch($locked->id, $actor->id, $reason);
 
-            return ['booking' => $locked, 'refund' => $refund, 'alternatives' => $alternatives];
+            return ['booking' => $locked, 'refund' => $refund, 'refund_pending' => $refundPending, 'alternatives' => $alternatives];
         });
     }
 
@@ -206,6 +219,18 @@ class BookingService
 
             return true;
         });
+    }
+
+    /** Read-only answer for other modules (e.g. the alternative-host finder); the real check still happens under the lock. */
+    public function isFree(int $hostId, string $date, string $start, string $end): bool
+    {
+        try {
+            $this->assertSlotFree($hostId, $date, $start, $end, null);
+
+            return true;
+        } catch (BookingRuleViolation) {
+            return false;
+        }
     }
 
     public function startsAt(Booking $booking): CarbonImmutable

@@ -18,6 +18,9 @@
                     <dd>{{ __('booking::messages.payment_status.'.$booking->payment->status->value) }}
                         @if ((float) $booking->payment->refunded_amount > 0) ({{ number_format((float) $booking->payment->refunded_amount, 3) }} TND {{ __('booking::messages.refunded') }})@endif</dd></div>
             @endif
+            @if ($refundPending)
+                <p class="rounded border border-amber-300 bg-amber-50 p-2" role="status">{{ __('booking::messages.refund_in_progress') }}</p>
+            @endif
             @if ($booking->status->value === 'requested')
                 <div><dt class="label">{{ __('booking::messages.answer_before') }}</dt><dd>{{ $booking->expires_at->format('Y-m-d H:i') }}</dd></div>
             @endif

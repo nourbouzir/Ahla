@@ -37,7 +37,9 @@ class RefundService
         }
 
         $this->payments->refund($payment, $amount, $canceller, 'refund after cancellation');
-        RefundRequested::dispatch($payment->id, $booking->id, $amount, $booking->cancellation_reason);
+        if (bccomp($amount, '0', 3) > 0) {
+            RefundRequested::dispatch($payment->id, $booking->id, $amount, $booking->cancellation_reason);
+        }
 
         return $amount;
     }

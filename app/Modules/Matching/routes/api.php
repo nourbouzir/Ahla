@@ -1,3 +1,6 @@
 <?php
 
-// Search API routes arrive with issue #23 (P3-1).
+use App\Modules\Matching\Http\Controllers\SearchApiController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/search', SearchApiController::class)->middleware('throttle:60,1')->name('api.search');
