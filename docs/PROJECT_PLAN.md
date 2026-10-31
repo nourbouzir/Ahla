@@ -17,7 +17,7 @@
 6. **Shared files get tiny PRs.** `composer.*`, `package*.json`, `.env.example`, `AI_CONTEXT.md` and `docs/architecture.md` change in their own small PR so conflicts stay trivial. `docs/CHANGELOG.md`: one line per PR.
 7. **Phase gates.** At the end of each phase we both stop, merge everything, run the full test suite on `main` and tick the gate below before the next phase starts.
 
-> Branch protection is not available on this private repo with the current GitHub plan, so rules 5 and 7 are team conventions, backed by `CODEOWNERS`. If the repo goes public or the plan is upgraded, turn on 'require PR + 1 approval + CI' (listed in P0-3).
+> Required PRs, approval, and CI branch protection are not available on this private repo's current GitHub plan. This is **deferred to Nour** and remains a team convention backed by `CODEOWNERS` until the plan changes. Automatic branch deletion after merge is enabled. CODEOWNERS review requests may not be available on this plan.
 
 ### Who owns what
 
@@ -44,7 +44,9 @@ Total: **43 issues** - Nour 22, Salma 21.
 
 **Goal.** One runnable Laravel skeleton on main, agreed decisions, and shared interfaces with fakes, so from Phase 1 on each of us can work alone without waiting for the other.
 
-**Gate (done when).** composer install and php artisan test pass on main and in CI; php artisan migrate:fresh builds the whole schema; ADR 0004 is merged; app/Contracts and the fakes are merged and reviewed by both.
+**Gate (done when).** `composer install` and `composer test` pass on `main` and in CI; `php artisan migrate:fresh` builds the whole schema; ADR 0004 is merged; every ADR question is either answered or explicitly marked **Deferred** with an owner; and `app/Contracts`, its fakes, and events are merged and reviewed by both owners.
+
+**Gate status:** implementation and documentation are on `feat/phase-0-foundation`; the gate is not complete until the changes are reviewed and merged and the checks pass on `main`.
 
 ### Nour's lane
 
@@ -229,7 +231,7 @@ Start **P0-1** first; while it is being built, Salma can already do **P0-2** and
 ## 11. Parked - not in this plan
 
 - SRS FV Candidate features, until the team approves them one by one: **FR-21** like/pass and mutual matches, **FR-22** favorites, **FR-23** ratings and reviews, **FR-24** broad admin tools and statistics, **FR-25** social login.
-- SDD-only features that SRS FV does not mention (commission and host payouts, strikes and automatic suspension, disputes, review publication rules). P0-2 decides whether any of them returns to v1; if so, add issues in a new phase.
+- SDD-only features that SRS FV does not mention (commission and host payouts, strikes and automatic suspension, disputes, review publication rules) are out of v1 per ADR 0004. Reintroducing any requires a new issue and ADR.
 - Native Android/iOS apps (SRS FV NFR-16 lists them; the SDD is web-only). Decided in P0-2.
 
 ## 12. Working rules (short)

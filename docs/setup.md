@@ -24,8 +24,8 @@ cd ahla
 
 # 3. Environment variables
 cp .env.example .env
-# then edit .env: at least DB_USERNAME / DB_PASSWORD. Leave PAYMENT_GATEWAY=fake
-# and MAIL_MAILER=log for local work — nothing is really charged or sent.
+# then edit .env: at least DB_USERNAME / DB_PASSWORD. Local/test contract
+# bindings use fakes; no payment or translation provider is selected in v1.
 
 # 4. Install dependencies
 composer install
@@ -49,6 +49,11 @@ composer lint        # composer lint:fix repairs style problems automatically
 
 Tests use an in-memory SQLite database (set in `phpunit.xml`), so they need no
 MySQL. Running the app and `php artisan migrate` do need MySQL from step 5.
+The Phase 0 schema is split by module migrations and can be created from a clean
+database with `php artisan migrate:fresh --seed`. The test suite migrates an
+in-memory SQLite database. Production must explicitly configure concrete
+implementations for every interface in `config/ahla.php`; the app fails at boot
+if a binding is missing or does not implement its contract.
 
 ### How the project skeleton was made (issue #1, already done)
 
@@ -68,6 +73,10 @@ and seed data in its `Database/Seeders/` class. No file outside the module needs
 editing, which is what lets two people work in parallel without merge conflicts.
 To add a module, copy an existing folder, rename the classes and add its name to
 `app/Modules/Modules.php` — `tests/Feature/ModulesTest.php` fails if you forget.
+
+Cross-module interfaces and scalar-ID domain events live in `app/Contracts/`
+and `app/Events/`. Local fake bindings support explicit success, decline, and
+timeout behavior for payment tests; the provider remains unselected (ADR 0004).
 
 ## Troubleshooting
 

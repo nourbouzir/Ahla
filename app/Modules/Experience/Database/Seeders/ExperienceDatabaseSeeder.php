@@ -72,7 +72,7 @@ class ExperienceDatabaseSeeder extends Seeder
             foreach ($listings as $listing) {
                 Experience::updateOrCreate(
                     ['host_profile_id' => $host->id, 'title' => $listing['title']],
-                    [...$listing, 'published' => true],
+                    [...$listing, 'interests' => [$listing['category']], 'published' => true],
                 );
             }
         }
