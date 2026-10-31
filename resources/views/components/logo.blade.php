@@ -17,6 +17,6 @@
         <path d="M6 45.5h36" stroke="#4c5e22" stroke-width="2.2" stroke-linecap="round"/>
     </svg>
     @if ($text)
-        <span class="font-display text-3xl font-bold leading-none text-door-800">{{ __('common.app_name') }}</span>
+        <span class="text-xl font-bold leading-none tracking-tight text-accent-900">{{ __('common.app_name') }}</span>
     @endif
 </span>

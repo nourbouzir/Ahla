@@ -1,4 +1,4 @@
-<x-layouts.app :title="$request->hostProfile->display_name">
+<x-dash area="admin" :title="$request->hostProfile->display_name" :heading="false">
     @php($host = $request->hostProfile)
     <a class="underline" href="{{ route('admin.verifications.index') }}">{{ __('common.actions.back') }}</a>
     <h1 class="mt-2 text-2xl font-bold">{{ $host->display_name }}</h1>
@@ -33,4 +33,4 @@
     @else
         <p class="mt-4"><strong>{{ __('admin::messages.decision') }}:</strong> {{ $request->decision }} - {{ $request->decision_reason }}</p>
     @endif
-</x-layouts.app>
+</x-dash>

@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('admin::messages.verifications')">
+<x-dash area="admin" :title="__('admin::messages.verifications')" :heading="false">
     <h1 class="text-2xl font-bold">{{ __('admin::messages.verifications') }}</h1>
 
     <nav class="mt-3 flex gap-3" aria-label="{{ __('admin::messages.filter') }}">
@@ -57,4 +57,4 @@
             </li>
         @endforeach
     </ul>
-</x-layouts.app>
+</x-dash>

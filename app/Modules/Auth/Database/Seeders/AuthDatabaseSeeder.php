@@ -26,6 +26,10 @@ class AuthDatabaseSeeder extends Seeder
 
         $this->account('Lea Martin', 'tourist@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'fr', ['fr', 'en'], ['food', 'history']);
         $this->account('Sam Carter', 'sam@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'en', ['en'], ['photography', 'nature']);
+        $this->account('Nora Haddad', 'nora@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'fr', ['fr', 'ar'], ['craft', 'art']);
+        $this->account('Marco Rossi', 'marco@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'en', ['en'], ['food', 'history']);
+        $this->account('Yuki Tanaka', 'yuki@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'en', ['en'], ['photography', 'art']);
+        $this->account('Hannah Weber', 'hannah@ahla.test', Role::Tourist, self::DEMO_PASSWORD, 'en', ['en', 'fr'], ['nature', 'food']);
     }
 
     private function adminPassword(): string

@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('admin::messages.bookings')">
+<x-dash area="admin" :title="__('admin::messages.bookings')" :heading="false">
     <h1 class="text-2xl font-bold">{{ __('admin::messages.bookings') }}</h1>
     <nav class="mt-3 flex flex-wrap gap-3" aria-label="{{ __('admin::messages.filter') }}">
         <a class="underline {{ $status === null ? 'font-bold' : '' }}" href="{{ route('admin.bookings.index') }}">{{ __('admin::messages.filter_all') }}</a>
@@ -31,4 +31,4 @@
         </table>
     </div>
     {{ $bookings->links() }}
-</x-layouts.app>
+</x-dash>

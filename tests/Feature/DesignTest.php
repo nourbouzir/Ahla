@@ -124,7 +124,7 @@ class DesignTest extends TestCase
         $this->assertFileExists(public_path('favicon.svg'));
 
         $css = file_get_contents(resource_path('css/app.css'));
-        foreach (['--color-door-700', '--color-clay-700', '--color-gold-400', '--color-olive-700', '--color-wash:'] as $token) {
+        foreach (['--color-accent-600', '--color-accent-700', '--color-clay-700', '--color-gold-400', '--color-olive-700', '--color-wash:', '--font-sans'] as $token) {
             $this->assertStringContainsString($token, $css, "theme variable $token is defined once in app.css");
         }
         // Fonts come from npm packages bundled by Vite, never from another origin (the CSP allows only our own).

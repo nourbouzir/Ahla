@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('experience::messages.availability')">
+<x-dash area="host" :title="__('experience::messages.availability')" :heading="false">
     <h1 class="text-2xl font-bold">{{ __('experience::messages.availability') }}</h1>
 
     @if (! $profile)
@@ -50,4 +50,4 @@
             </form>
         </section>
     @endif
-</x-layouts.app>
+</x-dash>

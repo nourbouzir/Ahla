@@ -8,13 +8,14 @@ npm run build && php artisan serve      # http://localhost:8000
 php artisan queue:work                  # optional: sends the queued e-mails and translations
 ```
 
-Every demo account has the password `password`.
+Every demo account has the password `password`. In development the login page lists the main accounts with a **Use** button that fills the form (hidden in production).
 
 | Role | Email | Notes |
 |------|-------|-------|
-| Admin | `admin@ahla.test` | `AHLA_ADMIN_PASSWORD` in `.env` overrides the password |
+| Admin | `admin@ahla.test` | lands in `/admin`; `AHLA_ADMIN_PASSWORD` in `.env` overrides the password |
 | Tourist | `tourist@ahla.test` (Lea, French) | has one confirmed booking with Amel |
 | Tourist | `sam@ahla.test` (Sam, English) | has a pending request to Youssef |
+| Guide (verified) | (logs in to `/host/dashboard`) |
 | Host (verified) | `amel@ahla.test`, `youssef@ahla.test`, `ines@`, `mehdi@`, `sana@`, `karim@`, `rania@`, `walid@`, `leila@`, `hichem@ahla.test` | ten cities and languages |
 | Host (pending) | `omar@ahla.test` | application waiting for the admin |
 | Host (rejected) | `nadia@ahla.test` | shows the "apply again" path |
@@ -34,3 +35,8 @@ Every demo account has the password `password`.
 - Nothing is confirmed until the payment is captured. Declined, expired and cancelled bookings release or refund the money.
 - A host's phone number appears only after confirmation, and only if the host agreed (Profile > phone checkbox).
 - Failed e-mail or translation never stops a booking.
+
+## Guide space and admin space (extra five minutes)
+
+- **Guide (`amel@ahla.test`)** lands in the guide space: requests to answer with a countdown, the next seven days, an earnings chart (the seed adds forty past bookings), the setup checklist and the latest messages. Open *Clients* for stages (awaiting, upcoming, returning, past), a client's history and a private note only the guide can read. *Messages* is the inbox of all booking chats; *Calendar* shows bookings and days off; *Earnings* is net of refunds and exports CSV. Log in as `youssef@ahla.test` to see a pending request with *Accept* and *Decline* on the overview.
+- **Admin (`admin@ahla.test`)** lands on the platform overview: totals, bookings per day, net volume per month, bookings by status and a "Needs attention" list. *Users* searches and filters every account and can lock one (it is logged out at once). *Guides* compares guides by rating, bookings, cancellation rate and volume, with suspend and reinstate. *Revenue* shows paid, refunded, net volume and the indicative revenue at the configured rate (`AHLA_COMMISSION_RATE`, planning figure only, ADR 0007).

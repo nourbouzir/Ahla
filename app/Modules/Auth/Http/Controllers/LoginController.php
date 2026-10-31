@@ -44,9 +44,23 @@ class LoginController extends Controller
         }
 
         RateLimiter::clear($key);
+
+        if (Auth::user()->disabled_at !== null) {
+            Auth::logout();
+
+            throw ValidationException::withMessages(['email' => __('auth::messages.disabled')]);
+        }
+
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        // Guides and admins land in their own space; everybody else where they were going.
+        $home = match (Auth::user()->role->value) {
+            'host' => route('host.dashboard'),
+            'admin' => route('admin.dashboard'),
+            default => route('home'),
+        };
+
+        return redirect()->intended($home);
     }
 
     public function destroy(Request $request): RedirectResponse
