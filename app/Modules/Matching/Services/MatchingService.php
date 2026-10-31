@@ -2,126 +2,109 @@
 
 namespace App\Modules\Matching\Services;
 
-use App\Modules\Experience\Models\Experience;
-use App\Modules\Experience\Services\ExperienceCatalog;
-use App\Modules\Verification\Services\HostDirectory;
+use App\Modules\Matching\Strategies\InterestStrategy;
+use App\Modules\Matching\Strategies\LanguageStrategy;
+use App\Modules\Matching\Strategies\MatchingStrategy;
+use App\Modules\Matching\Strategies\ProximityStrategy;
+use App\Modules\Matching\Strategies\RatingStrategy;
+use App\Modules\Matching\Support\MatchResult;
+use App\Modules\Matching\Support\SearchCriteria;
+use App\Modules\Verification\Models\HostProfile;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
+/**
+ * The AI-assisted feature (FR-09, FR-10): rank eligible hosts and say why.
+ *
+ * Score = weighted average of the strategies that apply to this search
+ * (weights from config / MATCH_WEIGHT_*). It is plain, local and deterministic:
+ * the same input always gives the same order. No LLM (that would need an ADR).
+ *
+ * Order: score, then rating (unrated hosts count as 4.0), then lowest host id.
+ * Reasons: the two criteria that contributed most. A host with no matching
+ * criterion still gets a non-empty reason ("Verified local host in <city>").
+ */
 class MatchingService
 {
-    private const WEIGHTS = [
-        'language' => 0.4,
-        'interest' => 0.3,
-        'city' => 0.2,
-        'rating' => 0.1,
-    ];
+    /** @var list<MatchingStrategy> in the order used to break ties between equal contributions */
+    private array $strategies;
 
-    public function __construct(
-        private readonly HostDirectory $hosts,
-        private readonly ExperienceCatalog $experiences,
-    ) {}
-
-    /**
-     * @param  array{q?: string, city?: string, language?: string, interest?: string, min_rating?: numeric-string, max_price?: numeric-string}  $filters
-     * @return Collection<int, Experience>
-     */
-    public function search(array $filters = []): Collection
+    public function __construct(private readonly HostSearch $search, ?array $strategies = null)
     {
-        $hosts = $this->hosts->verified($filters)->keyBy('id');
-        $experiences = $this->experiences->publishedForHosts($hosts->keys()->all(), $filters);
+        $this->strategies = $strategies ?? [
+            new LanguageStrategy, new InterestStrategy, new ProximityStrategy, new RatingStrategy,
+        ];
+    }
 
-        if ($search = trim($filters['q'] ?? '')) {
-            $experiences = $experiences->filter(function (Experience $experience) use ($hosts, $search) {
-                $host = $hosts->get($experience->host_profile_id);
-                $searchable = Str::lower($experience->title.' '.$experience->description.' '.$host->display_name);
-
-                return Str::contains($searchable, Str::lower($search));
-            });
-        }
-
-        return $experiences
-            ->map(function (Experience $experience) use ($filters, $hosts) {
-                $host = $hosts->get($experience->host_profile_id);
-                $languages = $host->user->languages->pluck('language')->all();
-                $interests = $host->user->interests->pluck('interest')->all();
-                $availableWeight = 0;
-                $score = 0;
-
-                foreach (self::WEIGHTS as $criterion => $weight) {
-                    $matched = match ($criterion) {
-                        'language' => isset($filters['language'])
-                            ? in_array($filters['language'], $languages, true)
-                            : null,
-                        'interest' => isset($filters['interest'])
-                            ? in_array($filters['interest'], $interests, true)
-                            : null,
-                        'city' => isset($filters['city'])
-                            ? $host->city === $filters['city']
-                            : null,
-                        'rating' => (float) ($host->rating_avg ?? 4.0) / 5,
-                    };
-
-                    if ($matched === null) {
-                        continue;
-                    }
-
-                    $availableWeight += $weight;
-                    $score += (float) $matched * $weight;
-                }
-
-                $reasons = [];
-
-                if (isset($filters['language'])) {
-                    $reasons[] = __('matching::discover.match_language', [
-                        'language' => __('matching::discover.languages.'.$filters['language']),
-                    ]);
-                }
-
-                if (isset($filters['interest'])) {
-                    $reasons[] = __('matching::discover.match_interest', [
-                        'interest' => __('matching::discover.interests.'.$filters['interest']),
-                    ]);
-                }
-
-                if (isset($filters['city'])) {
-                    $reasons[] = __('matching::discover.match_city', ['city' => $host->city]);
-                }
-
-                if ($host->rating_avg !== null && (float) $host->rating_avg >= 4.8) {
-                    $reasons[] = __('matching::discover.match_rating', [
-                        'rating' => number_format((float) $host->rating_avg, 1),
-                    ]);
-                }
-
-                if ($reasons === []) {
-                    $reasons[] = __('matching::discover.match_city', ['city' => $host->city]);
-                }
-
-                $experience->setAttribute(
-                    'match_score',
-                    $availableWeight > 0 ? (int) round(($score / $availableWeight) * 100) : 0,
-                );
-                $experience->setAttribute('match_reasons', array_slice($reasons, 0, 2));
-                $experience->setAttribute('host_name', $host->display_name);
-                $experience->setAttribute('host_city', $host->city);
-                $experience->setAttribute('host_bio', $host->bio);
-                $experience->setAttribute('host_languages', $languages);
-                $experience->setAttribute('host_rating_avg', $host->rating_avg);
-                $experience->setAttribute('host_rating_count', 0);
-                $experience->setAttribute('host_avatar_url', $host->photo_url);
-
-                return $experience;
-            })
-            ->sort(function (Experience $first, Experience $second) {
-                return $second->match_score <=> $first->match_score
-                    ?: (float) ($second->host_rating_avg ?? 0) <=> (float) ($first->host_rating_avg ?? 0);
-            })
+    /** @return Collection<int, MatchResult> every eligible host, best first (empty = none available) */
+    public function rank(SearchCriteria $criteria): Collection
+    {
+        return $this->search->candidates($criteria)
+            ->map(fn (HostProfile $host) => $this->match($host, $criteria))
+            ->sort(fn (MatchResult $a, MatchResult $b) => [$b->score, $this->rating($b->host), $b->host->id * -1]
+                <=> [$a->score, $this->rating($a->host), $a->host->id * -1])
             ->values();
     }
 
-    public function cities(): Collection
+    public function paginate(SearchCriteria $criteria, int $page = 1, ?int $perPage = null): LengthAwarePaginator
     {
-        return $this->hosts->cities();
+        $perPage = max(1, min(50, $perPage ?? (int) config('ahla.matching.per_page')));
+        $ranked = $this->rank($criteria);
+
+        return new LengthAwarePaginator(
+            $ranked->forPage($page, $perPage)->values(),
+            $ranked->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()],
+        );
+    }
+
+    private function match(HostProfile $host, SearchCriteria $criteria): MatchResult
+    {
+        $weights = config('ahla.matching.weights');
+        $total = 0.0;
+        $sum = 0.0;
+        $contributions = [];
+
+        foreach ($this->strategies as $order => $strategy) {
+            $evaluation = $strategy->evaluate($host, $criteria);
+            $weight = (float) ($weights[$strategy->key()] ?? 0);
+
+            if ($evaluation === null || $weight <= 0) {
+                continue;
+            }
+
+            $total += $weight;
+            $sum += $weight * $evaluation->value;
+
+            if ($evaluation->reasonKey !== null && $evaluation->value > 0) {
+                $contributions[] = [$weight * $evaluation->value, -$order, $evaluation];
+            }
+        }
+
+        // Strongest first; equal strength keeps the strategy order, so output is stable.
+        usort($contributions, fn ($a, $b) => [$b[0], $b[1]] <=> [$a[0], $a[1]]);
+
+        $reasons = array_map(
+            fn ($c) => __("matching::messages.reason.{$c[2]->reasonKey}", $c[2]->reasonParams),
+            array_slice($contributions, 0, 2),
+        );
+
+        if ($reasons === []) {
+            $reasons = [__('matching::messages.reason.verified', ['city' => $host->city])];
+        }
+
+        return new MatchResult(
+            $host,
+            $total > 0 ? (int) round($sum / $total * 100) : 0,
+            $reasons,
+            $host->experiences->sortBy('id')->values(),
+        );
+    }
+
+    private function rating(HostProfile $host): float
+    {
+        return $host->rating_avg !== null ? (float) $host->rating_avg : (float) config('ahla.matching.default_rating');
     }
 }
