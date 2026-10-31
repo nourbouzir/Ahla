@@ -39,7 +39,7 @@ flowchart TB
     BUS{{"Laravel events and queue"}}
     DB[("MySQL 8 / SQLite tests")]
     PRIVATE[("Private disk: identity evidence")]
-    GATEWAY["Payment provider (deferred)"]
+    GATEWAY["Konnect (integration gated)"]
     TRANSLATOR["Translation provider (deferred)"]
 
     WEB --> AUTH
@@ -82,8 +82,8 @@ flowchart TB
 
 `AppServiceProvider` binds each contract using `config/ahla.php`. Local/test
 defaults are fakes; production fails fast if a binding is missing or does not
-implement its contract. The payment provider remains unselected (ADR 0005 /
-issue #11).
+implement its contract. Konnect is the intended v1 provider, pending the
+capability checks in [ADR 0005](decisions/0005-payment-provider.md).
 
 ## 3. Cross-module contracts
 
@@ -195,9 +195,11 @@ not the Candidate like/pass or mutual-match backend (FR-21).
 - [ADR 0002](decisions/0002-use-laravel-modular-monolith.md): Laravel 12 modular monolith.
 - [ADR 0003](decisions/0003-authorise-then-capture-with-locked-transactions.md) as refined by [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md): payment and booking states.
 - [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md): SRS/SDD reconciliation, interim defaults, deferred questions and owners.
+- [ADR 0005](decisions/0005-payment-provider.md): intended Konnect integration and the required pre-production capability checks.
 - [`docs/requirements/ID-mapping.md`](requirements/ID-mapping.md): old-to-current requirement identifiers.
 
-The payment provider (#11), tourist refund final policy (#13), ID retention/legal
-basis (#15), source of ratings (#23), AI acceptance (#24), admin MFA (#35),
-backup RPO/RTO (#39), load profile (#38), and SDD reissue are explicitly deferred
-with owners in ADR 0004. Candidate FR-21 to FR-25 remain parked.
+Konnect refund/webhook-integrity confirmation (#11), tourist refund final policy
+(#13), ID retention/legal basis (#15), source of ratings (#23), AI acceptance
+(#24), admin MFA (#35), backup RPO/RTO (#39), load profile (#38), and SDD reissue
+are explicitly deferred with owners in ADR 0004 or ADR 0005. Candidate FR-21 to
+FR-25 remain parked.
