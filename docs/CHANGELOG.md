@@ -11,6 +11,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
 
 ### Added
+- Phase 2: host verification (encrypted ID upload, admin review with video call, suspend/reinstate), host state machine and Verified-only guard, experiences and weekly availability management, booking request/accept/decline/cancel with payment capture, overlap and 2-per-day rules under a row lock, booking screens for tourists and hosts, MySQL concurrency tests in CI (#15-#22).
 - Phase 1: base layout with EN/FR/AR and right-to-left (Tailwind), registration, login, logout and password reset (rate limited), role/action matrix as Gate abilities, tourist and host profiles with private phone and email, payment engine (sandbox gateway, `PaymentService`, refund policies, signed webhook), `AuditLogger` and ADR 0005 (#7-#14).
 - Phase 0 foundation: reconciled SRS FV/SDD decisions and ID mapping, documented ownership/review workflow, added configurable module contracts and fakes, and completed identity/catalog plus booking/payment/messaging/notification/audit schemas with factories and tests (#2–#6).
 - Host search ranking code (`MatchingService`, weights language 0.4, interests 0.3, proximity 0.2, rating 0.1) and starter hosts for the catalogue.

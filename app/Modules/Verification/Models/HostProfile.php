@@ -5,6 +5,7 @@ namespace App\Modules\Verification\Models;
 use App\Models\User;
 use App\Modules\Experience\Models\Availability;
 use App\Modules\Experience\Models\BlockedDate;
+use App\Modules\Experience\Models\Experience;
 use App\Modules\Verification\Enums\HostStatus;
 use Database\Factories\HostProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,6 +48,11 @@ class HostProfile extends Model
     public function verificationRequests(): HasMany
     {
         return $this->hasMany(VerificationRequest::class);
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(Experience::class);
     }
 
     public function availabilities(): HasMany
