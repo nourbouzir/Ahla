@@ -58,7 +58,10 @@ class FakePaymentGateway implements PaymentGateway
             $status = $this->mode === FakeGatewayMode::Decline
                 ? PaymentStatus::Failed
                 : PaymentStatus::Captured;
-            $this->statuses[$gatewayReference] = $status;
+            // A declined capture leaves the authorisation untouched so it can be retried.
+            if ($status === PaymentStatus::Captured) {
+                $this->statuses[$gatewayReference] = $status;
+            }
 
             return new PaymentGatewayResponse(
                 $status,
@@ -80,7 +83,9 @@ class FakePaymentGateway implements PaymentGateway
             $status = $this->mode === FakeGatewayMode::Decline
                 ? PaymentStatus::Failed
                 : PaymentStatus::Refunded;
-            $this->statuses[$gatewayReference] = $status;
+            if ($status === PaymentStatus::Refunded) {
+                $this->statuses[$gatewayReference] = $status;
+            }
 
             return new PaymentGatewayResponse(
                 $status,
@@ -134,7 +139,18 @@ class FakePaymentGateway implements PaymentGateway
     {
         $key = $operation.':'.$idempotencyKey;
 
-        return $this->responses[$key] ??= $callback();
+        if (isset($this->responses[$key])) {
+            return $this->responses[$key];
+        }
+
+        $response = $callback();
+
+        // Declines are not remembered: a retry with the same key gets a fresh attempt.
+        if ($response->status !== PaymentStatus::Failed) {
+            $this->responses[$key] = $response;
+        }
+
+        return $response;
     }
 
     private function throwIfTimedOut(): void

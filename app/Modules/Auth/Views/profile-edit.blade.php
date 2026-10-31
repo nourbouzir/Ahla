@@ -40,6 +40,9 @@
         @if ($user->role->value === 'host')
             <h2 class="mt-6 text-lg font-semibold">{{ __('auth::messages.host_section') }}</h2>
             <p class="text-sm text-slate-600">{{ __('auth::messages.host_status') }}: <span class="badge">{{ __('auth::messages.status.'.($host?->status->value ?? 'pending')) }}</span></p>
+            @if (Route::has('host.verification.show'))
+                <p class="mt-2"><a class="underline" href="{{ route('host.verification.show') }}">{{ __('verification::messages.title') }}</a></p>
+            @endif
             <x-input name="display_name" :label="__('auth::messages.display_name')" :value="$host?->display_name" required />
             <div class="mt-4">
                 <label class="label" for="bio">{{ __('auth::messages.bio') }} *</label>
