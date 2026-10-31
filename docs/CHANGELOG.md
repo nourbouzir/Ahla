@@ -7,12 +7,13 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 
 ## [Unreleased]
 
+### Removed
+- The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
+
 ### Added
+- Phase 1: base layout with EN/FR/AR and right-to-left (Tailwind), registration, login, logout and password reset (rate limited), role/action matrix as Gate abilities, tourist and host profiles with private phone and email, payment engine (sandbox gateway, `PaymentService`, refund policies, signed webhook), `AuditLogger` and ADR 0005 (#7-#14).
 - Phase 0 foundation: reconciled SRS FV/SDD decisions and ID mapping, documented ownership/review workflow, added configurable module contracts and fakes, and completed identity/catalog plus booking/payment/messaging/notification/audit schemas with factories and tests (#2–#6).
-- Social-first Ahla demo: discover Tunisian locals, inspect profiles and interests, pass/connect, accept a friend request, chat with persistent demo messages, explore an interactive Tunisia map, and browse local experiences.
-- A persistent, editable traveller profile with connection and activity cards, plus mobile bottom navigation and a full-screen phone chat with an accessible conversation list.
-- An accurate Tunisia outline and islands from Natural Earth 1:50m country-boundary data, with city pins placed from geographic coordinates (Natural Earth public domain data).
-- A database-backed discovery page for verified local hosts, with city, language, interest, rating and price filters, weighted match explanations, English/French/Arabic UI, demo listings, and `GET /api/experiences`.
+- Host search ranking code (`MatchingService`, weights language 0.4, interests 0.3, proximity 0.2, rating 0.1) and starter hosts for the catalogue.
 - `GET /api/health` (JSON `{"status":"ok"}`) with a feature test; `routes/api.php` is registered in `bootstrap/app.php` (no Sanctum needed).
 - `composer test` and `composer lint` / `composer lint:fix` (Laravel Pint); CI now runs the lint step before the tests (issue #1, P0-1).
 - Module layout: nine self-contained modules under `app/Modules/` (Auth, Verification, Experience, Matching, Booking, Payment, Messaging, Notification, Admin), each with its own `ModuleServiceProvider`, routes, migrations, views, language files and seeder; `App\Modules\Modules` is the single module list (issue #1, P0-1).
@@ -42,6 +43,9 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 Example of a real entry once you start building:
 
 ## [Unreleased]
+
+### Removed
+- The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
 
 ### Added
 - Study-partner matching by course (#12)

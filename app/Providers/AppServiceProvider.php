@@ -27,7 +27,8 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
 
-            $this->app->bind($contract, $implementation);
+            // Singletons: the fakes keep state between calls.
+            $this->app->singleton($contract, $implementation);
         }
     }
 

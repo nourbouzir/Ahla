@@ -16,7 +16,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
+            // SQLite keeps the index when the column goes, MySQL drops it with the column.
+            if (Schema::hasIndex('users', 'users_role_index')) {
+                $table->dropIndex(['role']);
+            }
             $table->dropColumn('role');
         });
     }

@@ -1,5 +1,8 @@
 <?php
 
-// JSON routes of the Payment module, loaded under the "api" group with the /api
-// prefix: Route::get('/things') here answers at /api/things.
-// Only this module's owner edits this file.
+use App\Modules\Payment\Http\Controllers\WebhookController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/payments/webhook', [WebhookController::class, 'handle'])
+    ->middleware('throttle:120,1')
+    ->name('payments.webhook');

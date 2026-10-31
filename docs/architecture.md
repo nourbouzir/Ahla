@@ -395,3 +395,20 @@ confirmed with real users after the first usability test.
 
 **Trade-offs accepted.** The monolith scales as one unit, so translation is isolated on the queue. Microservices and a
 message broker were rejected as too heavy for a student team and risky for money and limits.
+## Role / action matrix (issue #9)
+
+One list in `app/Modules/Auth/Support/Permissions.php` feeds a Gate ability per row. Controllers use `can:<ability>` or `role:<role>`; nobody compares roles by hand. Guests can only browse and search.
+
+| Ability | Tourist | Host | Admin |
+|---------|:-------:|:----:|:-----:|
+| profile.edit, booking.view | yes | yes | yes |
+| booking.request | yes | - | - |
+| booking.respond, host.apply, experience.manage, availability.manage | - | yes | - |
+| booking.cancel, message.send | yes | yes | - |
+| admin.verifications, admin.host-status, admin.audit | - | - | yes |
+
+Phone and email of the other party are shown only after a booking is `confirmed` (owner and admin always see their own / any). A tourist profile is private to its owner, admins and hosts they have a booking with; a host profile is public once the host is `verified`.
+
+## Payment engine (issues #11-#14)
+
+`PaymentService` is the only code that calls `PaymentGateway` and the only writer of `payments.status`. Steps: `authorise` (on request) -> `capture` (host accepts) | `release` (declined or expired) | `refund` (after cancellation). Each step uses an idempotency key, writes `audit_log` and fires `PaymentStatusChanged`. `RefundService` picks a `RefundPolicy` (`HostCancellationRefundPolicy` always 100%; `TouristCancellationRefundPolicy` 100% / 50% / 0% from `config/ahla.php`), and amounts are bcmath strings. `POST /api/payments/webhook` accepts forward-only status changes signed with HMAC-SHA256.

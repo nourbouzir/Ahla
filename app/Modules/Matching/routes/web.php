@@ -1,6 +1,3 @@
 <?php
 
-use App\Modules\Matching\Http\Controllers\DiscoverController;
-use Illuminate\Support\Facades\Route;
-
-Route::get('/', [DiscoverController::class, 'index'])->name('discover');
+// Search routes arrive with issue #23 (P3-1).
