@@ -4,6 +4,7 @@ return [
     'verifications' => 'Host applications',
     'filter' => 'Filter',
     'filter_open' => 'Open', 'filter_decided' => 'Decided', 'filter_all' => 'All',
+    'bookings' => 'Bookings and payments', 'col_tourist' => 'Guest', 'col_host' => 'Host', 'col_booking' => 'Booking', 'col_payment' => 'Payment',
     'audit' => 'Audit log',
     'host' => 'Host', 'city' => 'City', 'request_status' => 'Application', 'sent' => 'Sent', 'open' => 'Open',
     'none' => 'Nothing here.',

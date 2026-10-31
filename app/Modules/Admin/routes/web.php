@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Admin\Http\Controllers\AuditController;
+use App\Modules\Admin\Http\Controllers\BookingOverviewController;
 use App\Modules\Admin\Http\Controllers\VerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -11,5 +12,6 @@ Route::middleware(['auth', 'can:admin.verifications'])->prefix('admin')->group(f
     Route::post('/verifications/{verification}/schedule', [VerificationController::class, 'schedule'])->name('admin.verifications.schedule');
     Route::post('/verifications/{verification}/decide', [VerificationController::class, 'decide'])->name('admin.verifications.decide');
     Route::post('/hosts/{host}/status', [VerificationController::class, 'setHostStatus'])->middleware('can:admin.host-status')->name('admin.hosts.status');
+    Route::get('/bookings', BookingOverviewController::class)->middleware('can:admin.bookings')->name('admin.bookings.index');
     Route::get('/audit', [AuditController::class, 'index'])->middleware('can:admin.audit')->name('admin.audit');
 });

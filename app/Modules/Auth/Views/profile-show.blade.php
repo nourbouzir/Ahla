@@ -12,7 +12,9 @@
                 <dd>{{ $user->interests->map(fn ($i) => __("auth::messages.interest.{$i->interest}"))->join(', ') ?: '-' }}</dd></div>
             @if ($showContact)
                 <div><dt class="label">{{ __('auth::messages.email') }}</dt><dd>{{ $user->email }}</dd></div>
-                <div><dt class="label">{{ __('auth::messages.phone') }}</dt><dd>{{ $user->phone ?: '-' }}</dd></div>
+                @if ($showPhone)
+                    <div><dt class="label">{{ __('auth::messages.phone') }}</dt><dd>{{ $user->phone ?: '-' }}</dd></div>
+                @endif
             @endif
         </dl>
     </article>

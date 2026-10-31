@@ -30,6 +30,7 @@ return [
     'profile_title' => 'Votre profil',
     'profile_saved' => 'Profil enregistré.',
     'phone' => 'Téléphone',
+    'share_phone' => 'Partager mon numéro de téléphone avec l’autre personne une fois la réservation confirmée',
     'phone_hint' => 'Privé. Montré à l’autre personne seulement après la confirmation d’une réservation.',
     'preferred_language' => 'Langue de l’interface',
     'spoken_languages' => 'Langues parlées',

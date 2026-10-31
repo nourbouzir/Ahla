@@ -25,6 +25,7 @@ final class Permissions
         'admin.verifications' => [Role::Admin],
         'admin.host-status' => [Role::Admin],
         'admin.audit' => [Role::Admin],
+        'admin.bookings' => [Role::Admin],
     ];
 
     public static function allows(Role $role, string $ability): bool

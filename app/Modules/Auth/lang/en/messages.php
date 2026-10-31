@@ -30,6 +30,7 @@ return [
     'profile_title' => 'Your profile',
     'profile_saved' => 'Profile saved.',
     'phone' => 'Phone',
+    'share_phone' => 'Share my phone number with the other person once a booking is confirmed',
     'phone_hint' => 'Private. Shown to the other person only after a booking is confirmed.',
     'preferred_language' => 'Interface language',
     'spoken_languages' => 'Languages you speak',

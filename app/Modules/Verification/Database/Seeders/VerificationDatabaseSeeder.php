@@ -2,83 +2,77 @@
 
 namespace App\Modules\Verification\Database\Seeders;
 
-use App\Modules\Auth\Services\DemoHostAccountService;
+use App\Models\User;
+use App\Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
+use App\Modules\Auth\Enums\Role;
+use App\Modules\Verification\Enums\HostStatus;
 use App\Modules\Verification\Models\HostProfile;
+use App\Modules\Verification\Models\VerificationRequest;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 
+/**
+ * Demo hosts across the main cities and languages (not seeded in production):
+ * ten verified, one pending with an application waiting for the admin, one rejected.
+ * All demo accounts use the password in AuthDatabaseSeeder::DEMO_PASSWORD.
+ */
 class VerificationDatabaseSeeder extends Seeder
 {
+    /** name, email, city, languages, interests, rating, status, bio */
+    private const HOSTS = [
+        ['Amel Ben Youssef', 'amel@ahla.test', 'Tunis', ['ar', 'fr', 'en'], ['history', 'craft', 'food'], 4.9, 'verified', 'Medina-born storyteller who knows which doors open onto the best courtyards and workshops.'],
+        ['Youssef Trabelsi', 'youssef@ahla.test', 'Sidi Bou Said', ['ar', 'fr', 'en'], ['art', 'photography', 'history'], 4.8, 'verified', 'Painter and lifelong local. I love the village most when the day-trippers have gone home.'],
+        ['Ines Gharbi', 'ines@ahla.test', 'La Marsa', ['ar', 'fr', 'en'], ['craft', 'nature', 'art'], 4.7, 'verified', 'Ceramic artist with a sunny studio by the sea. Come and get clay under your nails.'],
+        ['Mehdi Louati', 'mehdi@ahla.test', 'Tunis', ['ar', 'fr'], ['food', 'history'], null, 'verified', 'History teacher by day, passionate cook by night. New on Ahla.'],
+        ['Sana Mejri', 'sana@ahla.test', 'Sousse', ['ar', 'fr', 'en'], ['history', 'food'], 4.6, 'verified', 'Sousse guide who loves the old town after dark and the best bambalouni in the city.'],
+        ['Karim Haddad', 'karim@ahla.test', 'Hammamet', ['fr', 'en'], ['nature', 'photography'], 4.4, 'verified', 'Photographer who knows the quiet coves and the best light on the Cap Bon coast.'],
+        ['Rania Zouari', 'rania@ahla.test', 'Kairouan', ['ar', 'fr'], ['craft', 'history'], 4.9, 'verified', 'Third-generation carpet weaver. Kairouan is slower than you expect, in the best way.'],
+        ['Walid Chebbi', 'walid@ahla.test', 'Sfax', ['ar', 'fr'], ['food', 'craft'], null, 'verified', 'Fisherman’s son who cooks what the port brings in. New on Ahla.'],
+        ['Leila Ben Salah', 'leila@ahla.test', 'Djerba', ['ar', 'fr', 'en'], ['craft', 'art', 'nature'], 4.8, 'verified', 'Weaver and potter from Djerba. Whitewashed lanes, island markets and slow afternoons.'],
+        ['Hichem Dridi', 'hichem@ahla.test', 'Tozeur', ['ar', 'fr', 'en'], ['nature', 'photography'], 4.5, 'verified', 'Oasis guide. I know the palms, the old brickwork and the quiet places worth an early alarm.'],
+        ['Omar Kefi', 'omar@ahla.test', 'Tunis', ['ar', 'en'], ['food'], null, 'pending', 'Street-food fan waiting for verification.'],
+        ['Nadia Feki', 'nadia@ahla.test', 'Sousse', ['ar', 'fr'], ['art'], null, 'rejected', 'Application rejected: identity document was not readable.'],
+    ];
+
     public function run(): void
     {
-        $hosts = [
-            [
-                'name' => 'Amel Ben Youssef',
-                'email' => 'amel@ahla.test',
-                'city' => 'Tunis',
-                'latitude' => 36.8065,
-                'longitude' => 10.1815,
-                'bio' => 'A medina-born storyteller who knows which doors open onto the best courtyards, workshops and cups of mint tea.',
-                'languages' => ['en', 'fr', 'ar'],
-                'interests' => ['history', 'craft', 'food'],
-                'rating_avg' => null,
-                'photo_url' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=85',
-            ],
-            [
-                'name' => 'Youssef Trabelsi',
-                'email' => 'youssef@ahla.test',
-                'city' => 'Sidi Bou Said',
-                'latitude' => 36.8704,
-                'longitude' => 10.3470,
-                'bio' => 'Painter, coffee drinker and lifelong local. I love the village most when the day-trippers have gone home.',
-                'languages' => ['en', 'fr', 'ar', 'it'],
-                'interests' => ['art', 'photography', 'history'],
-                'rating_avg' => null,
-                'photo_url' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=85',
-            ],
-            [
-                'name' => 'Ines Gharbi',
-                'email' => 'ines@ahla.test',
-                'city' => 'La Marsa',
-                'latitude' => 36.8782,
-                'longitude' => 10.3247,
-                'bio' => 'Ceramic artist and amateur botanist. I make a little room in my studio for anyone curious about clay and the coast.',
-                'languages' => ['en', 'fr', 'ar'],
-                'interests' => ['craft', 'nature', 'art'],
-                'rating_avg' => null,
-                'photo_url' => 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=85',
-            ],
-            [
-                'name' => 'Mehdi Louati',
-                'email' => 'mehdi@ahla.test',
-                'city' => 'Tunis',
-                'latitude' => 36.8065,
-                'longitude' => 10.1815,
-                'bio' => 'History teacher by day, passionate cook by night. The best stories in Tunis are usually told over lunch.',
-                'languages' => ['fr', 'ar', 'it'],
-                'interests' => ['food', 'history'],
-                'rating_avg' => null,
-                'photo_url' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=160&q=85',
-            ],
-        ];
+        if (app()->isProduction()) {
+            return;
+        }
 
-        foreach ($hosts as $hostData) {
-            $profileData = collect($hostData)->except(['name', 'email', 'languages', 'interests'])->all();
-            $user = app(DemoHostAccountService::class)->ensure($hostData['name'], $hostData['email']);
-            $user->languages()->delete();
-            $user->languages()->createMany(
-                collect($hostData['languages'])->map(fn (string $language) => ['language' => $language])->all(),
-            );
-            $user->interests()->delete();
-            $user->interests()->createMany(
-                collect($hostData['interests'])->map(fn (string $interest) => ['interest' => $interest])->all(),
-            );
+        $accounts = new AuthDatabaseSeeder;
+
+        foreach (self::HOSTS as [$name, $email, $city, $languages, $interests, $rating, $status, $bio]) {
+            $user = $accounts->account($name, $email, Role::Host, AuthDatabaseSeeder::DEMO_PASSWORD, $languages[0] === 'ar' ? 'fr' : $languages[0], $languages, $interests);
+            [$lat, $lng] = config('ahla.cities')[$city];
 
             $profile = HostProfile::firstOrNew(['user_id' => $user->id]);
             $profile->forceFill([
-                ...$profileData,
-                'display_name' => $hostData['name'],
-                'status' => 'verified',
+                'display_name' => $name, 'bio' => $bio, 'city' => $city, 'latitude' => $lat, 'longitude' => $lng,
+                'rating_avg' => $rating, 'status' => HostStatus::from($status),
             ])->save();
+
+            if (in_array($status, ['pending', 'rejected'], true)) {
+                $this->application($profile, $status);
+            }
         }
+    }
+
+    /** An application with a tiny encrypted placeholder document, so the admin screens have something to show. */
+    private function application(HostProfile $profile, string $status): void
+    {
+        if ($profile->verificationRequests()->exists()) {
+            return;
+        }
+
+        $path = 'verification/'.$profile->id.'/demo-id.png.enc';
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+        Storage::disk('local')->put($path, Crypt::encryptString($png));
+
+        VerificationRequest::forceCreate($status === 'pending'
+            ? ['host_profile_id' => $profile->id, 'evidence_path' => $path, 'status' => 'submitted']
+            : ['host_profile_id' => $profile->id, 'evidence_path' => $path, 'status' => 'decided', 'decision' => 'rejected',
+                'decision_reason' => 'The identity document was not readable.', 'decided_at' => now()->subDays(3)]);
     }
 }

@@ -4,6 +4,7 @@ return [
     'verifications' => 'Demandes d’hôtes',
     'filter' => 'Filtre',
     'filter_open' => 'Ouvertes', 'filter_decided' => 'Traitées', 'filter_all' => 'Toutes',
+    'bookings' => 'Réservations et paiements', 'col_tourist' => 'Invité', 'col_host' => 'Hôte', 'col_booking' => 'Réservation', 'col_payment' => 'Paiement',
     'audit' => 'Journal d’audit',
     'host' => 'Hôte', 'city' => 'Ville', 'request_status' => 'Demande', 'sent' => 'Envoyée', 'open' => 'Ouvrir',
     'none' => 'Rien à afficher.',

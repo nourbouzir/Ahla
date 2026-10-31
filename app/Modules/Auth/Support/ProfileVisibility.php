@@ -32,6 +32,16 @@ class ProfileVisibility
         return $viewer !== null && $this->bookings->haveAnyBooking($viewer, $subject);
     }
 
+    /** The phone number follows the same rule as the e-mail, plus the owner's own choice (FR-04). */
+    public function canSeePhone(?User $viewer, User $subject): bool
+    {
+        if ($viewer !== null && ($viewer->is($subject) || $viewer->role === Role::Admin)) {
+            return true;
+        }
+
+        return $subject->share_phone && $this->canSeeContact($viewer, $subject);
+    }
+
     public function canSeeContact(?User $viewer, User $subject): bool
     {
         if ($viewer === null) {
