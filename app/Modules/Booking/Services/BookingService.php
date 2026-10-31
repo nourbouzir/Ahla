@@ -17,6 +17,7 @@ use App\Modules\Booking\Exceptions\BookingRuleViolation;
 use App\Modules\Booking\Models\Booking;
 use App\Modules\Booking\States\BookingState;
 use App\Modules\Experience\Models\Experience;
+use App\Modules\Payment\Enums\PaymentStatus;
 use App\Modules\Payment\Exceptions\PaymentFailedException;
 use App\Modules\Payment\Services\PaymentService;
 use App\Modules\Payment\Services\RefundService;
@@ -202,6 +203,47 @@ class BookingService implements HostSchedule
             BookingCancelled::dispatch($locked->id, $actor->id, $reason);
 
             return ['booking' => $locked, 'refund' => $refund, 'refund_pending' => $refundPending, 'alternatives' => $alternatives];
+        });
+    }
+
+    /**
+     * Recovery for the worst case: the gateway captured the money but the answer
+     * never reached us, so the booking is still `requested` and the payment still
+     * `authorised`. The gateway is asked; if it says captured we record it and
+     * confirm - or, when the slot was taken in the meantime, refund and decline.
+     * Called by ReconcilePayments. Returns true when it changed something.
+     */
+    public function recoverPaidRequest(Booking $booking): bool
+    {
+        return DB::transaction(function () use ($booking) {
+            $this->lockHost($booking->host_id);
+            $locked = $this->lockBooking($booking);
+
+            if ($locked->status !== BookingStatus::Requested || $locked->payment?->status !== PaymentStatus::Authorised) {
+                return false;
+            }
+
+            try {
+                $remote = $this->payments->gatewayStatus($locked->payment);
+            } catch (PaymentFailedException) {
+                return false;
+            }
+
+            if ($remote !== PaymentStatus::Captured) {
+                return false;
+            }
+
+            $payment = $this->payments->applyGatewayStatus($locked->payment, PaymentStatus::Captured);
+
+            try {
+                $this->assertSlotFree($locked->host_id, $locked->date->toDateString(), $locked->start_time, $locked->end_time, $locked->id);
+                $this->move($locked, BookingStatus::Confirmed, null, 'recovered: payment was captured at the gateway');
+            } catch (BookingRuleViolation) {
+                $this->payments->refund($payment, (string) $payment->amount, null, 'recovered capture could not be honoured');
+                $this->move($locked, BookingStatus::Declined, null, 'slot taken before the payment answer arrived');
+            }
+
+            return true;
         });
     }
 

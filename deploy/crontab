@@ -1,0 +1,3 @@
+# /etc/cron.d/ahla  (user www-data). The scheduler runs expiry, auto-complete, payment reconcile and ID purge.
+* * * * * www-data cd /var/www/ahla && php artisan schedule:run >> /dev/null 2>&1
+30 2 * * * www-data cd /var/www/ahla && scripts/backup.sh /var/backups/ahla >> storage/logs/backup.log 2>&1

@@ -2,7 +2,6 @@
 
 namespace App\Modules\Verification\Database\Seeders;
 
-use App\Models\User;
 use App\Modules\Auth\Database\Seeders\AuthDatabaseSeeder;
 use App\Modules\Auth\Enums\Role;
 use App\Modules\Verification\Enums\HostStatus;

@@ -11,6 +11,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
 
 ### Added
+- Phase 5: demo seed data and walkthrough (`docs/demo.md`), acceptance tests named AT-FR-xx and `docs/traceability.md` (checked by a test), per-environment binding test, FR-04 phone-sharing choice, admin bookings overview, payment recovery after a lost gateway answer, sandbox fault injection, soak test, backup and restore scripts with a restore drill and RPO/RTO proposal (`docs/runbook.md`), k6 and PHP load scripts with measured numbers (`docs/performance.md`), deployment files and guide (`docs/deployment.md`, `deploy/`), usability test script (`docs/usability-test.md`) (#36-#43).
 - Phase 4: in-app messaging per booking with translation (ADR 0006) and a chat page, in-app and e-mail notifications for booking, payment, cancellation, refund and message events, language-parity and route-access tests in CI, security headers and HTTPS/cookie hardening (#30-#35).
 
 ### Fixed

@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
@@ -38,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('search', fn (Request $request) => Limit::perMinute((int) config('ahla.search_rate_limit'))->by($request->ip()));
+
         // HTTPS only in production: every generated link is https and cookies are never sent over http.
         if ($this->app->isProduction()) {
             URL::forceScheme('https');

@@ -5,6 +5,7 @@ namespace App\Modules\Booking;
 use App\Contracts\Bookings\ConfirmedBookingLookup;
 use App\Contracts\Bookings\HostSchedule;
 use App\Modules\Booking\Console\AcceptBookingCommand;
+use App\Modules\Booking\Console\RequestBookingCommand;
 use App\Modules\Booking\Models\Booking;
 use App\Modules\Booking\Policies\BookingPolicy;
 use App\Modules\Booking\Services\BookingService;
@@ -27,7 +28,7 @@ class BookingModuleServiceProvider extends ModuleServiceProvider
         Gate::policy(Booking::class, BookingPolicy::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([AcceptBookingCommand::class]);
+            $this->commands([AcceptBookingCommand::class, RequestBookingCommand::class]);
         }
     }
 }

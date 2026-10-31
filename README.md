@@ -4,7 +4,7 @@
 
 **Team:** Salma Gzara, Nour Bouzir
 **Course:** CS 488 — AI-First Software Engineering
-**Status:** 🚧 In development (first discovery and host-matching slice implemented)
+**Status:** Feature-complete for the v1 plan (all 43 issues); production deployment and the user test are the only open steps (see [docs/deployment.md](docs/deployment.md), [docs/usability-test.md](docs/usability-test.md))
 
 ---
 
@@ -14,7 +14,7 @@ Tourists visiting Tunisia struggle to find a trustworthy local who speaks their 
 
 ## Tech stack
 
-PHP 8.3 + Laravel 12 (Blade, plain JavaScript, Leaflet/OpenStreetMap), MySQL 8, Composer + npm (Vite assets), PHPUnit. Payment gateway and translation API providers are still to be chosen. See [ADR 0002](docs/decisions/0002-use-laravel-modular-monolith.md). (Keep in sync with `AI_CONTEXT.md`.)
+PHP 8.3 + Laravel 12 (Blade, Tailwind CSS 4, plain JavaScript), MySQL 8, Composer + npm (Vite assets), PHPUnit. Payments run on a sandbox gateway until the bank adapter exists ([ADR 0005](docs/decisions/0005-payment-provider.md)); translation uses a LibreTranslate-compatible service ([ADR 0006](docs/decisions/0006-translation-provider.md)). See [ADR 0002](docs/decisions/0002-use-laravel-modular-monolith.md). (Keep in sync with `AI_CONTEXT.md`.)
 
 ## Getting started
 
@@ -22,8 +22,8 @@ Prerequisites: Git, PHP 8.3 with the `pdo_mysql`, `mbstring`, `intl` and `gd` ex
 
 ```bash
 # 1. Clone and enter the repo
-git clone <your-repo-url>
-cd ahla
+git clone https://github.com/nourbouzir/Ahla.git
+cd Ahla
 
 # 2. One-time setup (installs git hooks, etc.)
 ./scripts/setup.sh
@@ -36,7 +36,7 @@ composer install
 npm install
 php artisan key:generate
 
-# 5. Create the database (name from DB_DATABASE in .env), then migrate and seed demo hosts
+# 5. Create the database (name from DB_DATABASE in .env), then migrate and seed the demo data
 php artisan migrate --seed
 
 # 6. Run the app (and, in a second terminal, the queue worker)
@@ -48,7 +48,9 @@ composer test
 composer lint
 ```
 
-> **Where we are:** the home page is a social discovery demo: browse Tunisian locals, view profiles, connect, accept a request, chat, explore an interactive Tunisia map, and find local experiences. Connection and chat interactions use mock data stored in the browser; account registration and booking/payment flows are still to come. The nine feature modules live under `app/Modules/` (see [docs/setup.md](docs/setup.md) for how modules work); see [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the broader roadmap.
+> **Where we are:** accounts, host verification, search with "why this host", booking with payment, cancellation and refunds, chat with translation, notifications, and an admin area are built and tested. Demo logins and a ten-minute walkthrough are in [docs/demo.md](docs/demo.md). The nine feature modules live under `app/Modules/` (see [docs/setup.md](docs/setup.md)).
+
+**More docs:** [architecture](docs/architecture.md) - [requirement traceability](docs/traceability.md) - [performance](docs/performance.md) - [runbook and backups](docs/runbook.md) - [deployment](docs/deployment.md) - [decisions](docs/decisions/) - [changelog](docs/CHANGELOG.md)
 
 ## Project structure
 
@@ -64,6 +66,7 @@ composer lint
 .githooks
 .githooks/pre-push
 .github
+.github/CODEOWNERS
 .github/ISSUE_TEMPLATE
 .github/copilot-instructions.md
 .github/pull_request_template.md
@@ -78,7 +81,10 @@ CONTRIBUTING.md
 LICENSE
 README.md
 app
+app/Contracts
+app/Events
 app/Http
+app/Jobs
 app/Models
 app/Modules
 app/Providers
@@ -90,6 +96,7 @@ bootstrap/providers.php
 composer.json
 composer.lock
 config
+config/ahla.php
 config/app.php
 config/auth.php
 config/cache.php
@@ -105,19 +112,36 @@ database/.gitignore
 database/factories
 database/migrations
 database/seeders
+deploy
+deploy/ahla-worker.conf
+deploy/crontab
+deploy/nginx.conf
 docs
 docs/CHANGELOG.md
+docs/PROJECT_PLAN.md
 docs/README.md
 docs/architecture.md
 docs/decisions
+docs/demo.md
+docs/deployment.md
+docs/performance.md
 docs/requirements
+docs/runbook.md
 docs/setup-report.md
 docs/setup.md
+docs/traceability.md
+docs/usability-test.md
+lang
+lang/ar
+lang/en
+lang/fr
+package-lock.json
 package.json
 phpunit.xml
 public
 public/.htaccess
 public/favicon.ico
+public/images
 public/index.php
 public/robots.txt
 resources
@@ -129,18 +153,25 @@ routes/api.php
 routes/console.php
 routes/web.php
 scripts
+scripts/backup.sh
 scripts/check-docs.sh
+scripts/deploy.sh
+scripts/loadcheck.php
+scripts/restore.sh
 scripts/setup.sh
+scripts/smoke-test.sh
 scripts/update-structure.sh
 storage
 storage/app
 storage/framework
 storage/logs
 tests
+tests/Concerns
 tests/Feature
 tests/Fixtures
 tests/TestCase.php
 tests/Unit
+tests/load
 vite.config.js
 ```
 <!-- STRUCTURE:END -->

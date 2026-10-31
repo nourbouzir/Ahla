@@ -29,21 +29,9 @@ Five external services sit behind interfaces: payment gateway, translation API,
 map service (browser-side Leaflet/OpenStreetMap), email provider, and a
 video-call link (e.g. Jitsi) used for host verification.
 
-### Implemented first slice
+### As built
 
-The current application entry point is the Matching module's mobile-first
-social discovery demo (`GET /`): mock Tunisian locals can be explored, connected
-with, and messaged in a browser-persisted prototype, alongside an editable
-traveller profile and suggested experiences. The interactive Tunisia map uses
-the public-domain Natural Earth 1:50m country boundary and city coordinates,
-including the country's offshore islands. Its experience listings read published experiences for verified hosts,
-supports city, language, interest, minimum-rating, maximum-price and text
-filters, and ranks the results with the documented language / interest /
-proximity / rating weights. Each result includes a short match explanation.
-`GET /api/experiences` exposes the same search and ranking behavior as JSON.
-The connection and conversation interactions are mock demo state; the host-profile and experience schemas and starter data are owned by their
-Verification and Experience modules; user-facing discovery copy is translated
-in English, French and Arabic.
+Everything in the plan (`docs/PROJECT_PLAN.md`, 43 issues) is implemented except production hosting and the user test; the phase sections at the end of this file describe each part as it was built, and `docs/traceability.md` maps every requirement to a test. Real implementations are bound for every contract in `config/ahla.php`; the fakes in `app/Contracts/Fakes` exist for tests only (`tests/Feature/BindingsPerEnvironmentTest.php` proves production binds no fake).
 
 ## 2. Component diagram
 
@@ -131,16 +119,17 @@ Reminders, payouts and review publication are out of v1 ([ADR 0004](decisions/00
 | Booking | `BookingService`, `Booking`, `BookingState` | `app/Modules/Booking/` |
 | Payment | `PaymentGateway` adapters, `RefundPolicy` classes | `app/Modules/Payment/` |
 | Messaging | Messages, `Translator` adapter | `app/Modules/Messaging/` |
-| Notification | `NotificationListener`, channels | `app/Modules/Notification/` |
-| Events / Jobs | Domain events, listeners, scheduled jobs | `app/Events/`, `app/Listeners/`, `app/Jobs/` |
+| Notification | `NotificationDispatcher` (listens to domain events), in-app and e-mail notifications | `app/Modules/Notification/` |
+| Admin | Host review, booking overview, audit log, `AuditLogger` | `app/Modules/Admin/` |
+| Events / Jobs | Domain events and scheduled / queued jobs | `app/Events/`, `app/Jobs/` |
 
 ### Design patterns (SDD §8)
 
 | Pattern | Applied to |
 |---------|------------|
 | **State** | `HostState` (pending, verified, rejected, suspended) and `BookingState` (requested, confirmed, declined, expired, cancelled, completed) — each state class allows or refuses each action |
-| **Strategy** | `MatchingStrategy` (Language, Interest, Proximity, Rating) combined by `MatchingService` with configurable weights; `RefundPolicy` (`TouristCancellationPolicy`, `HostCancellationPolicy`) |
-| **Observer** (domain events) | `EventBus` with `NotificationListener` and `AuditLogger`; the alternative-host lookup (`AlternativeHostFinder`) runs on a late host cancellation; slow listeners run on the queue |
+| **Strategy** | `MatchingStrategy` (Language, Interest, Proximity, Rating) combined by `MatchingService` with configurable weights; `RefundPolicy` (`TouristCancellationRefundPolicy`, `HostCancellationRefundPolicy`) |
+| **Observer** (domain events) | Laravel events with `NotificationDispatcher`; `AuditLogger` is called by the services that change a status; the alternative-host lookup (`AlternativeHostFinder`) runs on a late host cancellation; slow listeners run on the queue |
 | **Adapter** | `PaymentGateway` (one adapter per provider) and `Translator` (provider adapter + fallback returning the original text) |
 
 ## 4. Data model
