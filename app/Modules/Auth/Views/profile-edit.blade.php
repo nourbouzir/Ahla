@@ -1,8 +1,21 @@
 <x-layouts.app :title="__('auth::messages.profile_title')">
-    <form method="POST" action="{{ route('profile.update') }}" class="card mx-auto max-w-xl">
+    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="card mx-auto max-w-xl">
         @csrf @method('PUT')
         <h1 class="text-2xl font-bold">{{ __('auth::messages.profile_title') }}</h1>
         <p class="mt-1 text-sm text-slate-600">{{ $user->email }}</p>
+
+        <div class="mt-4 flex items-center gap-4">
+            <x-avatar :user="$user" size="h-20 w-20 text-2xl" :label="__('auth::messages.avatar')" />
+            <div>
+                <label class="label" for="avatar">{{ __('auth::messages.avatar') }}</label>
+                <input class="mt-1 block text-sm" type="file" id="avatar" name="avatar" accept="image/jpeg,image/png,image/webp" aria-describedby="avatar-hint">
+                <p id="avatar-hint" class="mt-1 text-sm text-slate-600">{{ __('auth::messages.avatar_hint') }}</p>
+                @error('avatar')<p class="error-text">{{ $message }}</p>@enderror
+                @if ($user->avatar_path)
+                    <label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_avatar" value="1"> {{ __('auth::messages.avatar_remove') }}</label>
+                @endif
+            </div>
+        </div>
 
         <x-input name="name" :label="__('auth::messages.name')" :value="$user->name" autocomplete="name" required />
         <x-input name="phone" type="tel" :label="__('auth::messages.phone')" :value="$user->phone" autocomplete="tel" />

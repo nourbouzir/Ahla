@@ -10,12 +10,28 @@ if (chat) {
         const li = document.createElement('li');
         li.dataset.id = m.id;
         li.className = 'max-w-[85%] rounded-xl border p-3 ' + (m.mine
-            ? 'ms-auto border-brand-100 bg-brand-50'
-            : 'me-auto border-slate-200 bg-white');
+            ? 'ms-auto border-door-200 bg-door-50'
+            : 'me-auto border-door-100 bg-white');
 
         const meta = document.createElement('p');
-        meta.className = 'text-xs text-slate-600';
-        meta.textContent = `${m.sender} - ${m.at}`;
+        meta.className = 'flex items-center gap-2 text-xs text-slate-600';
+        let face;
+        if (m.avatar) {
+            face = document.createElement('img');
+            face.src = m.avatar;
+            face.alt = '';
+            face.width = 24;
+            face.height = 24;
+            face.className = 'h-6 w-6 rounded-full object-cover';
+        } else {
+            face = document.createElement('span');
+            face.setAttribute('aria-hidden', 'true');
+            face.className = 'inline-flex h-6 w-6 items-center justify-center rounded-full bg-door-700 text-[10px] font-semibold text-white';
+            face.textContent = m.initials;
+        }
+        const who = document.createElement('span');
+        who.textContent = `${m.sender} - ${m.at}`;
+        meta.append(face, who);
 
         const text = document.createElement('p');
         text.className = 'mt-1 whitespace-pre-wrap break-words';

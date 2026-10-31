@@ -47,6 +47,20 @@ class HostSearch
             ->get();
     }
 
+    /**
+     * Verified hosts with a published experience per city (one query), for the home page.
+     *
+     * @return array<string, int> city => number of hosts
+     */
+    public function cityCounts(): array
+    {
+        return HostProfile::query()
+            ->where('status', HostStatus::Verified->value)
+            ->whereHas('experiences', fn ($q) => $q->where('published', true))
+            ->selectRaw('city, COUNT(*) as hosts')->groupBy('city')
+            ->pluck('hosts', 'city')->map(fn ($n) => (int) $n)->all();
+    }
+
     /** Free that weekday in the weekly hours and not on a blocked date. */
     private function availableOn(Builder $query, string $date): Builder
     {

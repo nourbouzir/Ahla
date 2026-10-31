@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Enums\Role;
+use App\Modules\Auth\Services\AvatarService;
 use App\Modules\Auth\Support\ProfileVisibility;
 use App\Modules\Verification\Models\HostProfile;
 use Illuminate\Http\RedirectResponse;
@@ -12,10 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class ProfileController extends Controller
 {
-    public function __construct(private readonly ProfileVisibility $visibility) {}
+    public function __construct(private readonly ProfileVisibility $visibility, private readonly AvatarService $avatars) {}
 
     public function edit(Request $request): View
     {
@@ -45,6 +47,7 @@ class ProfileController extends Controller
             'languages.*' => [Rule::in(config('ahla.languages'))],
             'interests' => ['array'],
             'interests.*' => [Rule::in(config('ahla.interests'))],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'display_name' => [Rule::requiredIf($isHost), 'nullable', 'string', 'max:120'],
             'bio' => [Rule::requiredIf($isHost), 'nullable', 'string', 'max:1500'],
             'city' => [Rule::requiredIf($isHost), 'nullable', Rule::in(array_keys(config('ahla.cities')))],
@@ -80,6 +83,17 @@ class ProfileController extends Controller
                 ])->save();
             }
         });
+
+        // Profile picture: replace, or remove. The image is re-encoded as a small square (see AvatarService).
+        if ($request->hasFile('avatar')) {
+            try {
+                $this->avatars->store($user, $request->file('avatar'));
+            } catch (InvalidArgumentException) {
+                return back()->withInput()->withErrors(['avatar' => __('auth::messages.avatar_invalid')]);
+            }
+        } elseif ($request->boolean('remove_avatar')) {
+            $this->avatars->delete($user);
+        }
 
         // The saved choice wins over the session one from now on.
         $request->session()->put('locale', $data['preferred_language']);

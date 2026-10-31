@@ -30,6 +30,7 @@ return [
     'profile_title' => 'Your profile',
     'profile_saved' => 'Profile saved.',
     'phone' => 'Phone',
+    'avatar' => 'Profile picture', 'avatar_hint' => 'JPG, PNG or WebP, up to 2 MB. It is cropped to a square.', 'avatar_remove' => 'Remove my picture', 'avatar_invalid' => 'This image could not be used. Try a JPG, PNG or WebP photo.',
     'share_phone' => 'Share my phone number with the other person once a booking is confirmed',
     'phone_hint' => 'Private. Shown to the other person only after a booking is confirmed.',
     'preferred_language' => 'Interface language',

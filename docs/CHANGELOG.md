@@ -7,6 +7,9 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 
 ## [Unreleased]
 
+### Changed
+- Design pass: Tunisian theme (Sidi Bou Said blue, whitewash, terracotta, gold and olive as Tailwind theme variables), zellige tile patterns in CSS/SVG, local fonts (Amiri headings, Inter and Noto Sans Arabic body, bundled by Vite), a new Ahla logo and favicon, a richer home page (hero, how it works, featured cities, tourist and host calls to action), and profile pictures (upload, square re-encode without EXIF, initials fallback) shown on the header, search, host pages, bookings and chat. No booking, payment or permission logic changed.
+
 ### Removed
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
 

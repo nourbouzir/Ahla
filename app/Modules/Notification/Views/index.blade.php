@@ -8,7 +8,7 @@
     <ul class="mt-4 space-y-3">
         @forelse ($notifications as $n)
             @php($kind = $n->data['kind'] ?? 'unknown')
-            <li class="card {{ $n->read_at ? '' : 'border-brand-600' }}">
+            <li class="card {{ $n->read_at ? '' : 'border-clay-500' }}">
                 <a class="font-semibold underline" href="{{ route('notifications.open', $n->id) }}">{{ __("notification::messages.kinds.$kind.title", $n->data['vars'] ?? []) }}</a>
                 @unless ($n->read_at)<span class="badge ms-2">{{ __('notification::messages.new') }}</span>@endunless
                 <p class="mt-1">{{ __("notification::messages.kinds.$kind.body", $n->data['vars'] ?? []) }}</p>

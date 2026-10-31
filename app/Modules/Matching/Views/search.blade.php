@@ -60,8 +60,8 @@
         @endauth
 
         @if ($results->isEmpty())
-            <div class="card mt-3">
-                <p>{{ $searched ? __('matching::messages.empty_search') : __('matching::messages.empty_all') }}</p>
+            <div class="card tile-bg mt-3 text-center">
+                <p class="font-display text-2xl text-door-900">{{ $searched ? __('matching::messages.empty_search') : __('matching::messages.empty_all') }}</p>
                 @if ($searched)<a class="underline" href="{{ route('search') }}">{{ __('matching::messages.clear') }}</a>@endif
             </div>
         @else

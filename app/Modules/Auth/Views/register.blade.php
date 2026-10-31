@@ -10,7 +10,7 @@
             <legend class="label">{{ __('auth::messages.role') }}</legend>
             @foreach (['tourist', 'host'] as $role)
                 <label class="mt-2 flex items-center gap-2">
-                    <input type="radio" name="role" value="{{ $role }}" @checked(old('role', 'tourist') === $role)>
+                    <input type="radio" name="role" value="{{ $role }}" @checked(old('role', request('role') === 'host' ? 'host' : 'tourist') === $role)>
                     {{ __("auth::messages.role_$role") }}
                 </label>
             @endforeach
