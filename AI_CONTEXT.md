@@ -12,10 +12,10 @@
 
 ## 1. Project summary
 
-**Name:** AHLA — Local Guide Matching Platform
-**One-liner:** A mobile-first web platform where tourists in Tunisia book a few hours with verified local hosts ("book a local, not a tour"), matched by language, interests, location and rating.
+**Name:** AHLA — Local discovery and experiences in Tunisia
+**One-liner:** A mobile-first web platform for tourists to discover verified Tunisian locals and book short local experiences.
 **Primary users:** Tourists (foreign or Tunisian visitors, often on a phone), Local Hosts (students, artisans, fishermen, retirees), and Admins (AHLA staff who verify hosts).
-**The AI-assisted component:** Host recommendation (FR-09) with a human-readable reason for every result (FR-10). In the current design this is a weighted scoring service (`MatchingService`: language 0.4, interests 0.3, proximity 0.2, rating 0.1) whose two strongest criteria become the "why this host" tags. Whether an LLM is added on top is **undecided** — do not add one without a new ADR. Message translation (FR-19) is an external Translation Service behind a `Translator` adapter.
+**Recommendations:** FR-09/FR-10 require ranked hosts and human-readable reasons. ADR 0004 chooses the deterministic weighted score (language 0.4, interests 0.3, proximity 0.2, rating 0.1); whether that satisfies “AI-generated” is explicitly deferred to issue #24, owned by Nour with the instructor. No LLM is in v1. Message translation (FR-19) is behind the `Translator` contract.
 
 Link to your design docs so the assistant can go deeper:
 - SRS / requirements (current baseline): `docs/requirements/Ahla_SRS_FV.docx` — **supersedes** the earlier SRS (`Ahla_SRS.docx`)
@@ -35,22 +35,22 @@ Link to your design docs so the assistant can go deeper:
 | Maps        | OpenStreetMap + Leaflet in the browser                                |
 | Deploy      | One Linux VPS: Nginx + PHP-FPM 8.3, MySQL 8, supervised queue worker, cron running `schedule:run` every minute. Dev: Laravel Sail or XAMPP |
 
-> The Payment Gateway provider is **not chosen yet** (open issue; must support authorise / capture / refund / payouts). Code against the `PaymentGateway` interface only.
+> The Payment Gateway provider is **not chosen yet** (ADR 0005 / issue #11; payouts are out of v1). Code against `PaymentGateway` only. Non-production defaults use fakes; production must configure concrete implementations for every interface in `config/ahla.php`.
 
 ## 3. Project structure
 
 The repo is the Laravel application root (Laravel 12 skeleton, issue #1 — see `docs/setup.md`).
 Modules are groups of controller + service + model + repository; modules never touch another module's tables directly.
 
-- `app/Modules/<Module>/` — one self-contained folder per module: `Auth`, `Verification`, `Experience`, `Matching`, `Booking`, `Payment`, `Messaging`, `Notification`, `Admin` (a `Trust` module returns only if ADR 0004 keeps reviews, strikes and disputes in v1)
-- `app/Modules/<Module>/<Module>ModuleServiceProvider.php` — extends `App\Modules\ModuleServiceProvider`, which loads the module's own `routes/web.php` (web group), `routes/api.php` (api group, `/api` prefix), `Database/Migrations/`, `Views/` (`view('booking::name')`) and `lang/{en,fr,ar}/` (`__('booking::messages.key')`). Nothing outside the module folder is edited to add a route, migration, view or string.
+- `app/Modules/<Module>/` — one self-contained folder per module: `Auth`, `Verification`, `Experience`, `Matching`, `Booking`, `Payment`, `Messaging`, `Notification`, `Admin`. There is no Trust module in v1 (reviews, disputes, reports, and strikes are out of scope).
+- `app/Modules/<Module>/<Module>ModuleServiceProvider.php` — extends `App\Modules\ModuleServiceProvider`, which loads the module's own `routes/web.php` (web group), `routes/api.php` (api group, `/api` prefix), `Database/Migrations/`, `Views/` (`view('booking::name')`) and `lang/{en,fr,ar}/` (`__('booking::messages.key')`). Shared contracts/events live in `app/Contracts/` and `app/Events/`.
 - `app/Modules/<Module>/Database/Seeders/<Module>DatabaseSeeder.php` — module seed data; `database/seeders/DatabaseSeeder.php` calls them in order and is not edited per module.
 - `app/Modules/Modules.php` — the single list of modules (provider registration and seeding order). Adding a module = copy a module folder + add its name there; `tests/Feature/ModulesTest.php` fails if the two disagree.
-- `app/Modules/Booking/States/`, `app/Modules/Verification/States/` — State pattern classes (`BookingState`, `HostState`)
+- `app/Modules/Booking/Enums/`, `app/Modules/Payment/Enums/`, `app/Modules/Verification/Enums/` — persisted state vocabularies; transition services are added with their implementation issues
 - `app/Modules/Matching/Strategies/` — `MatchingStrategy` implementations
 - `app/Modules/Payment/Policies/` — `RefundPolicy` implementations; `app/Modules/Payment/Gateways/` — `PaymentGateway` adapters
 - `app/Events/`, `app/Listeners/` — domain events and listeners (observer pattern)
-- `app/Jobs/` — scheduled/queued jobs (`ExpireRequests`, `SendReminders`, `AutoComplete`, `ReleasePayouts`, `PublishReviews`, `PurgeIdDocuments`)
+- `app/Jobs/` — queued/scheduled jobs when implemented; ADR 0004 excludes reminders, payouts, and review jobs from v1
 - `resources/views/`, `resources/css/`, `resources/js/` — only the shared layout and assets; module screens live in `app/Modules/<Module>/Views/`
 - `routes/web.php`, `routes/api.php` — app-wide routes only (health check etc.); feature routes live in the module's own `routes/` folder
 - `database/migrations/`, `database/seeders/` — app-wide schema and the root seeder; module tables live in `app/Modules/<Module>/Database/Migrations/`
@@ -65,14 +65,14 @@ Modules are groups of controller + service + model + repository; modules never t
 - **Comments:** explain *why*, not *what*. Match the density of surrounding code.
 - **Dependencies:** do **not** add a new library without the team agreeing first. Prefer Laravel built-ins.
 - **Secrets:** never hardcode keys/passwords. Use `.env` (which is gitignored). See `.env.example`.
-- **Tests:** new features come with at least one test. Business rules (limits, refunds, matching, suspension) need unit tests (target ≥ 80% line coverage, NFR-13 in the old SRS).
+- **Tests:** new features come with at least one test. Business rules (limits, refunds, matching, suspension) need focused tests. The old SRS 80% target is a team target, not an SRS FV requirement.
 - **Commits:** small and focused. Update `docs/CHANGELOG.md` when behavior changes.
 - **Money:** store as `DECIMAL(10,3)` (TND has 3 decimals). Never use floats.
 - **Business rules live in one place:** daily limit and overlap checks only in `BookingService`; refund amounts only in `RefundPolicy` classes; status transitions only in the State classes. Controllers stay thin.
 - **Booking concurrency:** request and accept both run in one DB transaction that locks the host's bookings for that date (`SELECT … FOR UPDATE`) and re-counts before writing. Never check-then-insert outside that transaction.
 - **Payments:** authorise on request, capture on host acceptance, release on expiry. Never store card data — only the gateway reference. A failed authorisation rolls the whole booking back.
 - **Status changes:** every host / booking / payment status change is written to `audit_log` (actor, reason, timestamp).
-- **Privacy:** ID documents go on the encrypted private disk, readable by admins only. Phone numbers stay hidden until a booking is accepted.
+- **Privacy:** ID evidence goes on the private disk and is readable only by its owner and admins; the interim retention default is 90 days after decision (legal basis deferred to #15). Phone numbers stay hidden until a booking is confirmed.
 - **Localisation:** no hard-coded user-facing text; use the module's `lang/{en,fr,ar}` files (`__('booking::messages.key')`). Layouts must work right-to-left for Arabic and from 360 px wide.
 - **Slow work** (email/SMS, translation, alternative-host suggestions) goes on the queue via events/listeners, not inline in a request.
 
@@ -87,38 +87,38 @@ Modules are groups of controller + service + model + repository; modules never t
 
 ## 6. Known document mismatches (read before implementing)
 
-The SDD was written against SRS v1.0. The current requirements baseline is **SRS FV**, which supersedes it. Until the team reconciles them, follow SRS FV for *what* to build and the SDD for *how*:
+The SDD was written against SRS v1.0. The current requirements baseline is **SRS FV**, which supersedes it. ADR 0004 records the reconciled decisions; use FV IDs only:
 
 | Topic | SDD / SRS v1.0 | SRS FV (current) |
 |-------|----------------|------------------|
 | Requirement IDs | FR-01…FR-26, NFR-01…NFR-13 | FR-01…FR-25, NFR-01…NFR-21 — **IDs are not interchangeable** |
-| Host states | applied → verified → active, suspended, rejected, banned | Pending, Verified, Rejected, Suspended; only **Verified** hosts bookable (FR-07) |
-| Platform | Web only; native apps out of scope | NFR-16 lists Android, iOS and web |
-| Booking confirmation | Authorise on request, capture on accept | Booking confirmed only after gateway reports successful payment (FR-15) |
-| Late host cancel | Alternatives within 10 km, up to 3 | Suggest an available host in the same city (FR-17) |
-| Commission, strikes, disputes, payouts | Specified (15%, 2 strikes/30 days, …) | Not specified — treat as open |
+| Host states | Applied, Verified, Active, Suspended, Rejected, Banned | `pending`, `verified`, `rejected`, `suspended`; only Verified hosts are bookable |
+| Platform | Web only | V1 is responsive mobile-first web; native apps are out of scope |
+| Booking/payment | Authorise then capture | Authorise on request, capture on acceptance; confirmed only after capture; gateway fallback is in ADR 0004 |
+| Host cancellation | Up to three alternatives within 10 km | Up to three available verified hosts in the same city |
+| Commission, strikes, disputes, payouts, reviews | Specified in SDD | Out of v1; manual suspension remains |
+| FV-open decisions | Not answered by SDD | Interim defaults and deferred owners are listed in ADR 0004 |
 
-If a task touches one of these rows, ask first and record the answer in an ADR.
+Read ADR 0004 and [`docs/requirements/ID-mapping.md`](docs/requirements/ID-mapping.md) before citing a requirement or implementing a disputed rule. Every deferred decision has an owner and issue in ADR 0004.
 
 ## 7. Glossary / domain terms
 
 - **Tourist** — visitor (foreign or Tunisian) who books an experience.
 - **Host** — local person who offers experiences after being verified.
 - **Experience** — a short activity offered by a host (1–6 hours, max 6 people, price per person in TND).
-- **Booking request** — tourist's request for one experience/date/time/group size; amount is *authorised*, not yet charged.
+- **Booking request** — tourist's request for one experience/date/time/group size; amount is authorised, not yet charged.
 - **Authorise / capture** — reserve the amount on the card / actually charge it.
-- **Confirmed booking** — accepted by the host (and, per SRS FV, paid).
-- **Active host** — (SDD) verified host with a published experience and payout details; only active hosts appear in search.
+- **Confirmed booking** — accepted by the host after successful payment capture.
 - **Verified host** — (SRS FV) host whose identity evidence and video call were approved by an admin.
 - **Late cancellation** — cancelled less than 24 h before the start.
-- **Strike** — a late host cancellation; 2 within 30 days lead to suspension (SDD only).
+- **Booking states** — requested, confirmed, declined, expired, cancelled, completed (ADR 0004).
 - **Daily limit** — a host may have at most **2** confirmed bookings per calendar day (FR-13, BR-02).
 - **Overlap** — two bookings that intersect in time for the same host; never allowed (FR-12).
-- **Refund policy (tourist)** — 100% if ≥ 48 h before, 50% if 24–48 h, 0% if < 24 h (SDD/BR-04). Host cancellation is always 100%.
+- **Refund policy (tourist)** — interim configurable default: 100% at least 48 h before, 50% from 24 to 48 h, 0% under 24 h; final policy deferred to #13. Host cancellation is always 100%.
 - **TND** — Tunisian dinar, 3 decimal places.
 - **MoSCoW** — Must / Should / Could / Won't priority scale; SRS FV also uses **Candidate** (not approved for launch).
 - **State pattern / Strategy / Adapter / Observer** — the four design patterns in the SDD (§8).
 
 ---
 
-_Last updated: 2026-10-30 by the AHLA team (Salma Gzara, Nour Bouzir). Review this file at the start of every work session._
+_Last updated: 2026-10-31 by the AHLA team (Salma Gzara, Nour Bouzir). Review this file at the start of every work session._

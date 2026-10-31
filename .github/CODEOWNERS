@@ -1,0 +1,29 @@
+# The last matching entry wins. Repository review rules are documented in
+# CONTRIBUTING.md; CODEOWNERS requests are a convenience, not a substitute.
+*                                      @nourbouzir @SalmaGz
+
+# Nour: identity, verification, experiences, discovery, notifications, admin
+/app/Modules/Auth/                     @nourbouzir
+/app/Modules/Verification/             @nourbouzir
+/app/Modules/Experience/               @nourbouzir
+/app/Modules/Matching/                  @nourbouzir
+/app/Modules/Notification/              @nourbouzir
+/app/Modules/Admin/                    @nourbouzir
+
+# Salma: bookings, payments, messaging, shared contracts and events
+/app/Modules/Booking/                  @SalmaGz
+/app/Modules/Payment/                  @SalmaGz
+/app/Modules/Messaging/                @SalmaGz
+/app/Contracts/                        @nourbouzir @SalmaGz
+/app/Events/                           @nourbouzir @SalmaGz
+/app/Listeners/                        @SalmaGz
+/app/Jobs/                             @SalmaGz
+
+# Shared configuration and architecture
+/composer.*                            @nourbouzir @SalmaGz
+/package*.json                         @nourbouzir @SalmaGz
+/.github/                              @nourbouzir @SalmaGz
+/AI_CONTEXT.md                         @nourbouzir @SalmaGz
+/docs/architecture.md                  @nourbouzir @SalmaGz
+/bootstrap/providers.php               @nourbouzir @SalmaGz
+/database/seeders/DatabaseSeeder.php   @nourbouzir @SalmaGz

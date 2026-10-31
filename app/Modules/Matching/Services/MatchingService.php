@@ -43,21 +43,23 @@ class MatchingService
         return $experiences
             ->map(function (Experience $experience) use ($filters, $hosts) {
                 $host = $hosts->get($experience->host_profile_id);
+                $languages = $host->user->languages->pluck('language')->all();
+                $interests = $host->user->interests->pluck('interest')->all();
                 $availableWeight = 0;
                 $score = 0;
 
                 foreach (self::WEIGHTS as $criterion => $weight) {
                     $matched = match ($criterion) {
                         'language' => isset($filters['language'])
-                            ? in_array($filters['language'], $host->languages, true)
+                            ? in_array($filters['language'], $languages, true)
                             : null,
                         'interest' => isset($filters['interest'])
-                            ? in_array($filters['interest'], $host->interests, true)
+                            ? in_array($filters['interest'], $interests, true)
                             : null,
                         'city' => isset($filters['city'])
                             ? $host->city === $filters['city']
                             : null,
-                        'rating' => (float) $host->rating_avg / 5,
+                        'rating' => (float) ($host->rating_avg ?? 4.0) / 5,
                     };
 
                     if ($matched === null) {
@@ -86,19 +88,14 @@ class MatchingService
                     $reasons[] = __('matching::discover.match_city', ['city' => $host->city]);
                 }
 
-                if ((float) $host->rating_avg >= 4.8) {
+                if ($host->rating_avg !== null && (float) $host->rating_avg >= 4.8) {
                     $reasons[] = __('matching::discover.match_rating', [
                         'rating' => number_format((float) $host->rating_avg, 1),
                     ]);
                 }
 
                 if ($reasons === []) {
-                    $reasons = [
-                        __('matching::discover.match_rating', [
-                            'rating' => number_format((float) $host->rating_avg, 1),
-                        ]),
-                        __('matching::discover.match_city', ['city' => $host->city]),
-                    ];
+                    $reasons[] = __('matching::discover.match_city', ['city' => $host->city]);
                 }
 
                 $experience->setAttribute(
@@ -109,16 +106,16 @@ class MatchingService
                 $experience->setAttribute('host_name', $host->display_name);
                 $experience->setAttribute('host_city', $host->city);
                 $experience->setAttribute('host_bio', $host->bio);
-                $experience->setAttribute('host_languages', $host->languages);
+                $experience->setAttribute('host_languages', $languages);
                 $experience->setAttribute('host_rating_avg', $host->rating_avg);
-                $experience->setAttribute('host_rating_count', $host->rating_count);
-                $experience->setAttribute('host_avatar_url', $host->avatar_url);
+                $experience->setAttribute('host_rating_count', 0);
+                $experience->setAttribute('host_avatar_url', $host->photo_url);
 
                 return $experience;
             })
             ->sort(function (Experience $first, Experience $second) {
                 return $second->match_score <=> $first->match_score
-                    ?: (float) $second->host_rating_avg <=> (float) $first->host_rating_avg;
+                    ?: (float) ($second->host_rating_avg ?? 0) <=> (float) ($first->host_rating_avg ?? 0);
             })
             ->values();
     }

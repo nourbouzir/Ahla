@@ -24,11 +24,10 @@ class DiscoverTest extends TestCase
             'display_name' => 'Hidden Pending Host',
             'bio' => 'Not approved yet.',
             'city' => 'Tunis',
-            'languages' => ['en'],
-            'interests' => ['food'],
-            'rating_avg' => '5.00',
-            'rating_count' => 1,
+            'rating_avg' => null,
         ]);
+        $pendingHost->languages()->create(['language' => 'en']);
+        $pendingHost->interests()->create(['interest' => 'food']);
         Experience::create([
             'host_profile_id' => $profile->id,
             'title' => 'Not bookable yet',
@@ -41,7 +40,7 @@ class DiscoverTest extends TestCase
             'published' => true,
         ]);
 
-        $this->get('/?city=Tunis&language=en&interest=food&max_price=70&min_rating=4.8')
+        $this->get('/?city=Tunis&language=en&interest=food&max_price=70')
             ->assertOk()
             ->assertSee('Come for Tunisia.')
             ->assertSee('The medina, behind the blue doors')

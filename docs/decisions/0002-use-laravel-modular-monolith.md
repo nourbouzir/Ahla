@@ -39,4 +39,4 @@ classes, using **Laravel 12 (PHP 8.3)** and **MySQL 8 (InnoDB)**:
 
 - Easier: consistent bookings and payments in one transaction; simple local setup (one repo, one DB); Laravel gives events, queues, scheduling, policies and testing out of the box; business rules are plain classes that are easy to unit test.
 - Harder: the whole app scales as one unit, so slow modules (translation) must be isolated with the queue; module boundaries rely on team discipline, not on the network; a future native app would need the JSON API (`/api/*`) to be kept clean and versioned.
-- We are committed to PHP/Composer tooling in CI and to MySQL features (row locks). The payment provider is still open and must support authorise / capture / refund / payouts (tracked in `docs/architecture.md` §7).
+- We are committed to PHP/Composer tooling in CI and to MySQL features (row locks). The payment provider is still open and must support authorise / capture / refund; payouts are out of v1 per ADR 0004.

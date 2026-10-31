@@ -9,18 +9,20 @@ class HostDirectory
 {
     public function verified(array $filters = []): Collection
     {
-        $query = HostProfile::query()->where('status', 'verified');
+        $query = HostProfile::query()
+            ->with(['user.languages', 'user.interests'])
+            ->where('status', 'verified');
 
         if ($city = $filters['city'] ?? null) {
             $query->where('city', $city);
         }
 
         if ($language = $filters['language'] ?? null) {
-            $query->whereJsonContains('languages', $language);
+            $query->whereHas('user.languages', fn ($languages) => $languages->where('language', $language));
         }
 
         if ($interest = $filters['interest'] ?? null) {
-            $query->whereJsonContains('interests', $interest);
+            $query->whereHas('user.interests', fn ($interests) => $interests->where('interest', $interest));
         }
 
         if (isset($filters['min_rating'])) {
@@ -34,6 +36,7 @@ class HostDirectory
     {
         return HostProfile::query()
             ->where('status', 'verified')
+            ->with(['user.languages', 'user.interests'])
             ->distinct()
             ->orderBy('city')
             ->pluck('city');
