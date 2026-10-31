@@ -8,6 +8,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ## [Unreleased]
 
 ### Added
+- Synchronous audit logging for host, booking, and payment status-change events, with actor/timestamp persistence and feature tests (#14).
 - Phase 0 foundation: reconciled SRS FV/SDD decisions and ID mapping, documented ownership/review workflow, added configurable module contracts and fakes, and completed identity/catalog plus booking/payment/messaging/notification/audit schemas with factories and tests (#2–#6).
 - Social-first Ahla demo: discover Tunisian locals, inspect profiles and interests, pass/connect, accept a friend request, chat with persistent demo messages, explore an interactive Tunisia map, and browse local experiences.
 - A persistent, editable traveller profile with connection and activity cards, plus mobile bottom navigation and a full-screen phone chat with an accessible conversation list.

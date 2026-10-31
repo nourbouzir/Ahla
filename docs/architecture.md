@@ -98,7 +98,9 @@ issue #11).
 Domain events include booking requested/confirmed/cancelled/status changed,
 payment status changed, host status changed, message sent, and refund requested.
 Payloads use scalar identifiers, status strings, amounts, and reasons. These events establish the
-handoff shape; queued listeners and real domain workflows are later-phase work.
+handoff shape. Listeners discovered in `app/Listeners/` synchronously write
+host, booking, and payment status changes to `audit_log`; other event workflows
+remain later-phase work.
 
 ## 4. Data model
 
@@ -137,7 +139,7 @@ erDiagram
 | `payments` | One per booking, TND `amount/refunded_amount`, optional `gateway_ref`, status and lifecycle timestamps |
 | `messages` | Booking, sender and recipient FKs; `original_text`, `translated_text`, `language`, translation language, read timestamp |
 | `notifications` | Laravel UUID notification with polymorphic recipient and JSON data |
-| `audit_log` | Entity/ID, old/new status, actor, reason, timestamp; generic entity ID is not a foreign key |
+| `audit_log` | Entity/ID, old/new status, actor, reason, timestamp; generic entity ID is not a foreign key. Retention and read-access policy remain open. |
 
 There are no reviews, disputes, reports, payout, commission, strike, or reminder
 tables/jobs in v1. `rating_avg` is nullable until review policy is resolved;
@@ -162,16 +164,17 @@ rechecked inside the locked transaction on host acceptance (NFR-14). Times use
 midnight. Host cancellation refunds 100%; the configurable interim tourist
 policy is 100% at least 48 hours before, 50% 24–48 hours before, and 0% under
 24 hours. Every host, booking, or payment status transition must write
-`audit_log`.
+`audit_log`; synchronous event listeners implement this for the status-change
+events, with system-generated payment changes recording a null actor.
 
 For host cancellation under 24 hours, the alternative-host policy is up to three
 verified, available hosts in the same city, excluding the cancelling host.
 Language affects ranking but is not a filter; an empty result is valid.
 
 These are accepted design decisions with remaining policy questions tracked in
-ADR 0004. Booking/host state transition services, locked transactions, expiry
-jobs, and operational status auditing are not implemented by the Phase 0
-schema/contracts alone.
+ADR 0004. Booking/host state transition services, locked transactions, and
+expiry jobs are later-phase work. Audit log retention and read-access policy
+remain unresolved and must be decided before exposing audit records to users.
 
 ## 6. Recommendation and prototype boundary
 
