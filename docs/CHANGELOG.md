@@ -8,6 +8,10 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ## [Unreleased]
 
 ### Added
+- Social-first Ahla demo: discover Tunisian locals, inspect profiles and interests, pass/connect, accept a friend request, chat with persistent demo messages, explore an interactive Tunisia map, and browse local experiences.
+- A persistent, editable traveller profile with connection and activity cards, plus mobile bottom navigation and a full-screen phone chat with an accessible conversation list.
+- An accurate Tunisia outline and islands from Natural Earth 1:50m country-boundary data, with city pins placed from geographic coordinates (Natural Earth public domain data).
+- A database-backed discovery page for verified local hosts, with city, language, interest, rating and price filters, weighted match explanations, English/French/Arabic UI, demo listings, and `GET /api/experiences`.
 - `GET /api/health` (JSON `{"status":"ok"}`) with a feature test; `routes/api.php` is registered in `bootstrap/app.php` (no Sanctum needed).
 - `composer test` and `composer lint` / `composer lint:fix` (Laravel Pint); CI now runs the lint step before the tests (issue #1, P0-1).
 - Module layout: nine self-contained modules under `app/Modules/` (Auth, Verification, Experience, Matching, Booking, Payment, Messaging, Notification, Admin), each with its own `ModuleServiceProvider`, routes, migrations, views, language files and seeder; `App\Modules\Modules` is the single module list (issue #1, P0-1).
@@ -22,6 +26,7 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - `docs/PROJECT_PLAN.md`: 6 phases split into 43 GitHub issues, assigned to Nour and Salma with hand-offs and merge rules.
 
 ### Changed
+- Tuned the discovery, profile, map, and chat layouts for phone-sized screens, larger touch targets, safe areas, and readable mobile text.
 - Framework is Laravel 12 instead of 11: Composer blocks every Laravel 11 release because of security advisories (see ADR 0002).
 - `.gitignore`, `.editorconfig` and recommended VS Code extensions narrowed to the PHP/Node stack; the `logs/` rule is now `/logs/` so Laravel's `storage/logs` folder is kept in git.
 - `scripts/update-structure.sh` lists files through git, so ignored files (`vendor/`, `.env`, caches) never appear in the README tree.
