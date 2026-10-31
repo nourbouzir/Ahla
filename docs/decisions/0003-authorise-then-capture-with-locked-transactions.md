@@ -1,6 +1,6 @@
 # 3. Authorise payment on request, capture on acceptance, inside a locked transaction
 
-- **Status:** Proposed
+- **Status:** Accepted (confirmed and refined by [ADR 0004](0004-reconcile-srs-fv-and-sdd.md))
 - **Date:** 2026-10-30
 
 ## Context
@@ -21,10 +21,10 @@ Implement the SDD flow, which satisfies FR-15 (a booking is only *confirmed* aft
 3. Decline or expiry (scheduled `ExpireRequests` job, every 10 minutes): release the authorisation and notify the tourist.
 4. Amounts are stored as `DECIMAL(10,3)` in TND; only the gateway reference is stored, never card data (NFR-11).
 
-This ADR stays **Proposed** until the team confirms with the stakeholders that "authorise, then capture on accept" is acceptable under FR-15 and picks a gateway that supports authorise/capture/refund.
+[ADR 0004](0004-reconcile-srs-fv-and-sdd.md) confirms this flow, renames the SDD's `Accepted` status to `confirmed` (FV's word) and adds the fallback below for a provider that cannot authorise and capture separately.
 
 ## Consequences
 
 - Easier: the daily limit and overlap rules cannot be bypassed by concurrent requests; a tourist is never charged for a request the host never accepted.
-- Harder: the payment provider must support authorise/capture/refund (and payouts if the commission/payout features are kept); authorisations expire at the card network, so the 12-hour window must stay shorter than the provider's hold period; we need concurrency tests (NFR-14) to prove the locking works.
-- Open: if stakeholders insist on immediate charge at request time, `Payment` would capture immediately and the expiry job would refund instead of release.
+- Harder: the payment provider must support authorise/capture/refund (payouts are out of v1, see ADR 0004); authorisations expire at the card network, so the 12-hour window must stay shorter than the provider's hold period; we need concurrency tests (NFR-14) to prove the locking works.
+- Fallback: if the provider chosen in ADR 0005 has no separate authorise and capture, charge at request time; the booking stays `requested` until the host accepts, and decline or expiry refunds in full instead of releasing.

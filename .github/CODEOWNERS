@@ -1,0 +1,40 @@
+# Who owns what. The last matching line wins, so the default comes first.
+#
+# GitHub asks the owner to review a PR that touches their paths, which is how
+# the other person gets pulled in when they edit a module that is not theirs.
+# Our own rule is separate and stricter: the OTHER person reviews every PR
+# (see CONTRIBUTING.md section 9), so use `gh pr create --reviewer` if GitHub
+# did not request them automatically.
+#
+# Note: automatic review requests from CODEOWNERS may not be available for
+# private repositories on a free GitHub plan. The file still documents ownership
+# and starts working as soon as the repo is public or the plan allows it.
+
+# Default: both of us
+*                                      @nourbouzir @SalmaGz
+
+# Nour: accounts, verification, hosts' offer, discovery, notifications, admin
+/app/Modules/Auth/                     @nourbouzir
+/app/Modules/Verification/             @nourbouzir
+/app/Modules/Experience/               @nourbouzir
+/app/Modules/Matching/                 @nourbouzir
+/app/Modules/Notification/             @nourbouzir
+/app/Modules/Admin/                    @nourbouzir
+
+# Salma: booking, payment, messaging, and the contracts/events between modules
+/app/Modules/Booking/                  @SalmaGz
+/app/Modules/Payment/                  @SalmaGz
+/app/Modules/Messaging/                @SalmaGz
+/app/Contracts/                        @SalmaGz
+/app/Events/                           @SalmaGz
+/app/Listeners/                        @SalmaGz
+/app/Jobs/                             @SalmaGz
+
+# Shared files that both of us touch: always both, always a small PR of its own
+/composer.*                            @nourbouzir @SalmaGz
+/package*.json                         @nourbouzir @SalmaGz
+/.github/                              @nourbouzir @SalmaGz
+/AI_CONTEXT.md                         @nourbouzir @SalmaGz
+/docs/architecture.md                  @nourbouzir @SalmaGz
+/bootstrap/providers.php               @nourbouzir @SalmaGz
+/database/seeders/DatabaseSeeder.php   @nourbouzir @SalmaGz
