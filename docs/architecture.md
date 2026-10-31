@@ -29,6 +29,22 @@ Five external services sit behind interfaces: payment gateway, translation API,
 map service (browser-side Leaflet/OpenStreetMap), email provider, and a
 video-call link (e.g. Jitsi) used for host verification.
 
+### Implemented first slice
+
+The current application entry point is the Matching module's mobile-first
+social discovery demo (`GET /`): mock Tunisian locals can be explored, connected
+with, and messaged in a browser-persisted prototype, alongside an editable
+traveller profile and suggested experiences. The interactive Tunisia map uses
+the public-domain Natural Earth 1:50m country boundary and city coordinates,
+including the country's offshore islands. Its experience listings read published experiences for verified hosts,
+supports city, language, interest, minimum-rating, maximum-price and text
+filters, and ranks the results with the documented language / interest /
+proximity / rating weights. Each result includes a short match explanation.
+`GET /api/experiences` exposes the same search and ranking behavior as JSON.
+The connection and conversation interactions are mock demo state; the host-profile and experience schemas and starter data are owned by their
+Verification and Experience modules; user-facing discovery copy is translated
+in English, French and Arabic.
+
 ## 2. Component diagram
 
 ```mermaid

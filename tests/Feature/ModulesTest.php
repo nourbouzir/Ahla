@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Modules\Modules;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ModulesTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_every_module_folder_is_listed_in_the_registry(): void
     {
         $folders = array_map('basename', glob(app_path('Modules/*'), GLOB_ONLYDIR));

@@ -8,6 +8,10 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ## [Unreleased]
 
 ### Added
+- Social-first Ahla demo: discover Tunisian locals, inspect profiles and interests, pass/connect, accept a friend request, chat with persistent demo messages, explore an interactive Tunisia map, and browse local experiences.
+- A persistent, editable traveller profile with connection and activity cards, plus mobile bottom navigation and a full-screen phone chat with an accessible conversation list.
+- An accurate Tunisia outline and islands from Natural Earth 1:50m country-boundary data, with city pins placed from geographic coordinates (Natural Earth public domain data).
+- A database-backed discovery page for verified local hosts, with city, language, interest, rating and price filters, weighted match explanations, English/French/Arabic UI, demo listings, and `GET /api/experiences`.
 - `GET /api/health` (JSON `{"status":"ok"}`) with a feature test; `routes/api.php` is registered in `bootstrap/app.php` (no Sanctum needed).
 - `composer test` and `composer lint` / `composer lint:fix` (Laravel Pint); CI now runs the lint step before the tests (issue #1, P0-1).
 - Module layout: nine self-contained modules under `app/Modules/` (Auth, Verification, Experience, Matching, Booking, Payment, Messaging, Notification, Admin), each with its own `ModuleServiceProvider`, routes, migrations, views, language files and seeder; `App\Modules\Modules` is the single module list (issue #1, P0-1).

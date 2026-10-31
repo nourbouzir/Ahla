@@ -1,4 +1,6 @@
 <?php
 
-// Web routes of the Matching module, loaded under the "web" middleware group.
-// Only this module's owner edits this file.
+use App\Modules\Matching\Http\Controllers\DiscoverController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', [DiscoverController::class, 'index'])->name('discover');

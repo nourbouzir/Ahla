@@ -4,7 +4,7 @@
 
 **Team:** Salma Gzara, Nour Bouzir
 **Course:** CS 488 — AI-First Software Engineering
-**Status:** 🚧 In development (Lab 6: environment set up, implementation not started)
+**Status:** 🚧 In development (first discovery and host-matching slice implemented)
 
 ---
 
@@ -36,8 +36,8 @@ composer install
 npm install
 php artisan key:generate
 
-# 5. Create the database (name from DB_DATABASE in .env), then migrate
-php artisan migrate
+# 5. Create the database (name from DB_DATABASE in .env), then migrate and seed demo hosts
+php artisan migrate --seed
 
 # 6. Run the app (and, in a second terminal, the queue worker)
 php artisan serve
@@ -48,7 +48,7 @@ composer test
 composer lint
 ```
 
-> **Where we are:** the app is a Laravel 12 skeleton with nine empty feature modules under `app/Modules/` (see [docs/setup.md](docs/setup.md) for how modules work). Features are built issue by issue; see [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) once it is merged.
+> **Where we are:** the home page is a social discovery demo: browse Tunisian locals, view profiles, connect, accept a request, chat, explore an interactive Tunisia map, and find local experiences. Connection and chat interactions use mock data stored in the browser; account registration and booking/payment flows are still to come. The nine feature modules live under `app/Modules/` (see [docs/setup.md](docs/setup.md) for how modules work); see [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the broader roadmap.
 
 ## Project structure
 
