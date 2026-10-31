@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Events\ActivityRecorded;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Enums\Role;
@@ -88,12 +89,15 @@ class ProfileController extends Controller
         if ($request->hasFile('avatar')) {
             try {
                 $this->avatars->store($user, $request->file('avatar'));
+                ActivityRecorded::dispatch('profile', 'picture_changed', $user->id, $user->id);
             } catch (InvalidArgumentException) {
                 return back()->withInput()->withErrors(['avatar' => __('auth::messages.avatar_invalid')]);
             }
         } elseif ($request->boolean('remove_avatar')) {
             $this->avatars->delete($user);
         }
+
+        ActivityRecorded::dispatch('profile', 'updated', $user->id, $user->id);
 
         // The saved choice wins over the session one from now on.
         $request->session()->put('locale', $data['preferred_language']);

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Messaging\Services;
 
+use App\Contracts\Translation\Translator;
 use App\Events\MessageSent;
 use App\Jobs\TranslateMessage;
 use App\Models\User;
@@ -21,6 +22,15 @@ class MessagingService
 {
     /** Bookings in these states can still receive messages. */
     private const OPEN = [BookingStatus::Requested, BookingStatus::Confirmed, BookingStatus::Completed];
+
+    /**
+     * Is a translation service actually set up? Without one (the default on a fresh install) messages
+     * are simply shown as written: no job is queued and no "translation unavailable" note appears.
+     */
+    public function translationAvailable(): bool
+    {
+        return ! app(Translator::class) instanceof LibreTranslateTranslator || (string) config('ahla.translation.url') !== '';
+    }
 
     public function isParticipant(User $user, Booking $booking): bool
     {
@@ -50,7 +60,7 @@ class MessagingService
             'original_text' => $body,
             'language' => $from,
             // Only set when a translation is actually needed.
-            'translated_language' => $from !== $to ? $to : null,
+            'translated_language' => $from !== $to && $this->translationAvailable() ? $to : null,
         ]);
         $message->save();
 

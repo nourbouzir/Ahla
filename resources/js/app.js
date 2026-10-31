@@ -68,12 +68,3 @@ if (sideNav) {
         }
     }, 30000);
 }
-
-// Demo accounts panel on the login page (development only): fill the form with one click.
-document.querySelectorAll('[data-demo-email]').forEach((button) => {
-    button.addEventListener('click', () => {
-        document.getElementById('email').value = button.dataset.demoEmail;
-        document.getElementById('password').value = button.dataset.demoPassword;
-        document.querySelector('form[action$="/login"] button[type="submit"]').focus();
-    });
-});

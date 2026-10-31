@@ -129,8 +129,8 @@
                 <ul>
                     @forelse ($recent as $log)
                         <li class="border-b border-zinc-100 px-5 py-3 text-sm last:border-0">
-                            <p class="text-zinc-900"><span class="font-medium">{{ $log->entity }} #{{ $log->entity_id }}</span> <span class="text-zinc-600">{{ $log->old_status ?? '-' }} &rarr; {{ $log->new_status }}</span></p>
-                            <p class="text-xs text-zinc-600">{{ $log->actor?->name ?? __('admin::dash.overview.system') }} · {{ $log->created_at->diffForHumans() }}</p>
+                            <p>@include('admin::partials.log-line', ['log' => $log])</p>
+                            <p class="text-xs text-zinc-600">{{ $log->created_at->diffForHumans() }}</p>
                         </li>
                     @empty
                         <li class="px-5 py-8 text-center text-sm text-zinc-600">{{ __('admin::dash.overview.no_activity') }}</li>

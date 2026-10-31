@@ -8,6 +8,11 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ## [Unreleased]
 
 ### Added
+- Docs: `docs/user-guide.md` (how to use Ahla as tourist, guide and admin, with troubleshooting). Every account action (sign-up, login, logout, failed login, profile, experience and availability changes, messages sent) now appears in the admin timeline, with readable sentences and filters.
+
+### Changed
+- Login and sign-up stay open while logged in, with a notice and a one-click switch; demo accounts log in with one click without JavaScript; sign-up while logged in replaces the old session. Local default queue is `sync`, so e-mails and translations run at once. Without a translation service chat shows messages as written, with no error note.
+
 - Guide space (`/host/dashboard`): overview with requests to answer (live countdown), next-7-days agenda, earnings chart and setup checklist; client list with stages, history and private notes; inbox of booking chats with unread counts; month calendar with days off; earnings page with CSV export. Admin space (`/admin`): platform overview with an attention list, user list and detail with account locking, guide monitoring, revenue page (paid, refunded, net volume, indicative revenue) with CSV export. Demo logins on the login page (development only) and 40 seeded past bookings so every chart has data (ADR 0007).
 
 ### Changed
