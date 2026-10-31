@@ -88,4 +88,5 @@ return [
     'footer_explore' => 'Explorer',
     'footer_account' => 'Compte',
     'new' => 'Nouveau',
+    'page_expired' => 'Votre page a expiré, rien n’a été envoyé. Veuillez réessayer.',
 ];

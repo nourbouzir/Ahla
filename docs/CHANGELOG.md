@@ -13,6 +13,9 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 ### Changed
 - Full redesign: neutral product-style layout (Inter and Noto Sans Arabic, one palette of door blue, whitewash, terracotta, gold and olive), sticky header, side menus for the guide and admin spaces, scroll and load animations that switch off for reduced motion, restored arched-door logo.
 
+### Fixed
+- "419 Page Expired" on login and other forms: an expired page now returns to the form with a plain message and the typed text kept (never the password); logging out from an old tab just goes home; login, register and password forms are never cached by the browser; sessions last 2 hours instead of 30 minutes.
+
 ### Removed
 - Clean-up: 36 empty placeholder files in folders that now hold real files, the two default Laravel example tests, the unused axios bundle (front-end JavaScript went from 59 kB to 3 kB), an unused CSS class and an unused method.
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.

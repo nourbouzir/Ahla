@@ -7,6 +7,8 @@ use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,5 +29,20 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // An expired form (idle for a while, or an old tab after logging out) is not an error page: send the
+        // person back to the form with their typing kept (never the password) and a plain explanation.
+        // Laravel turns TokenMismatchException into an HTTP 419 before our code sees it.
+        $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419) {
+                return null;
+            }
+
+            if ($request->routeIs('logout')) {
+                return redirect()->route('home');
+            }
+
+            return redirect()->back(fallback: route('home'))
+                ->withInput($request->except('password', 'password_confirmation', '_token'))
+                ->withErrors(['page' => __('common.page_expired')]);
+        });
     })->create();

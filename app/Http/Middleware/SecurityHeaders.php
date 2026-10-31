@@ -19,6 +19,11 @@ class SecurityHeaders
     {
         $response = $next($request);
 
+        // Forms that carry a one-time token must never come back from the browser cache (Back button after logout).
+        if ($request->isMethod('GET') && $request->routeIs('login', 'register', 'password.*')) {
+            $response->headers->set('Cache-Control', 'no-store, max-age=0');
+        }
+
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
