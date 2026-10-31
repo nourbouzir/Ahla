@@ -1,6 +1,6 @@
 # 3. Authorise payment on request, capture on acceptance, inside a locked transaction
 
-- **Status:** Accepted as refined by [ADR 0004](0004-reconcile-srs-fv-and-sdd.md)
+- **Status:** Accepted (confirmed and refined by [ADR 0004](0004-reconcile-srs-fv-and-sdd.md))
 - **Date:** 2026-10-30
 
 ## Context
@@ -21,11 +21,10 @@ Implement the SDD flow, which satisfies FR-15 (a booking is only *confirmed* aft
 3. Decline or expiry (scheduled `ExpireRequests` job, every 10 minutes): release the authorisation and notify the tourist.
 4. Amounts are stored as `DECIMAL(10,3)` in TND; only the gateway reference is stored, never card data (NFR-11).
 
-ADR 0004 accepts this flow and documents the gateway fallback. The provider
-choice remains deferred to ADR 0005 / issue #11.
+[ADR 0004](0004-reconcile-srs-fv-and-sdd.md) confirms this flow, renames the SDD's `Accepted` status to `confirmed` (FV's word) and adds the fallback below for a provider that cannot authorise and capture separately.
 
 ## Consequences
 
 - Easier: the daily limit and overlap rules cannot be bypassed by concurrent requests; a tourist is never charged for a request the host never accepted.
-- Harder: the payment provider must support authorise/capture/refund; authorisations expire at the card network, so the 12-hour window must stay shorter than the provider's hold period; concurrency tests (NFR-14) must prove the locking works.
-- If the selected provider cannot separate authorisation and capture, use the immediate-charge/refund fallback recorded in ADR 0004.
+- Harder: the payment provider must support authorise/capture/refund (payouts are out of v1, see ADR 0004); authorisations expire at the card network, so the 12-hour window must stay shorter than the provider's hold period; we need concurrency tests (NFR-14) to prove the locking works.
+- Fallback: if the provider chosen in ADR 0005 has no separate authorise and capture, charge at request time; the booking stays `requested` until the host accepts, and decline or expiry refunds in full instead of releasing.

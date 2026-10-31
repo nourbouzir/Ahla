@@ -1,203 +1,397 @@
 # Architecture
 
-The requirements baseline is [`Ahla_SRS_FV.docx`](requirements/Ahla_SRS_FV.docx);
-the older SDD is used only where ADR 0004 retains a design needed by an FV
-requirement. Cite SRS FV IDs only. See [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md)
-and the [requirement ID mapping](requirements/ID-mapping.md).
+> Carried forward from the Software Design Description (`docs/requirements/Ahla_SDD.docx`,
+> v1.0, IEEE 1016) and aligned with the current requirements baseline
+> (`docs/requirements/Ahla_SRS_FV.docx`). Keep it a living document: when the real
+> code drifts from this, update this file (or the code).
+>
+> Requirement IDs below (`FR-xx`, `NFR-xx`, `BR-xx`) are **SRS FV** ids. Where the SDD and
+> SRS FV disagreed, [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md) decides and
+> [`requirements/ID-mapping.md`](requirements/ID-mapping.md) maps the old ids.
 
 ## 1. Overview
 
-Ahla is a Laravel 12 modular monolith (PHP 8.3), with MySQL 8 for deployment
-and in-memory SQLite for tests. The web app is responsive and mobile-first:
-travellers discover verified Tunisian hosts, explore experiences, and book
-through them. The current first slice is a social-discovery demo with mock
-connections/chat and a database-backed experience catalogue; its social state
-is browser-persisted and is not a backend implementation.
+AHLA is a **layered modular monolith** built with Laravel 12 (PHP 8.3) and MySQL 8
+(decision: [ADR 0002](decisions/0002-use-laravel-modular-monolith.md)).
+Tourists and hosts use a mobile-first web app (Blade + plain JavaScript, English /
+French / Arabic with right-to-left layout); admins use an admin panel. Both call
+the Laravel application over HTTPS. Only the application touches the database and
+the encrypted storage.
 
-Feature routes, views, migrations, language files, and seeders live in
-`app/Modules/<Module>/`. Modules communicate through services, contracts in
-`app/Contracts/`, and scalar-ID events in `app/Events/`. Events carry IDs and
-primitive status values, never Eloquent model payloads. Queue/scheduler behavior
-is added with its implementation issues; this foundation does not claim that
-booking, notification, or expiry workflows are already operational.
+Requests flow downwards: **presentation → application (modules) → data**. A module
+never reads another module's tables; it calls that module's *service* or reacts to
+its *domain events*. Slow work (email, translation, alternative-host
+suggestions) and every time-based rule (12 h request expiry, auto-complete,
+ID-document purge) runs on a **job queue and scheduler**,
+not inside the user's request.
 
-## 2. Components and boundaries
+Five external services sit behind interfaces: payment gateway, translation API,
+map service (browser-side Leaflet/OpenStreetMap), email provider, and a
+video-call link (e.g. Jitsi) used for host verification.
+
+### Implemented first slice
+
+The current application entry point is the Matching module's mobile-first
+social discovery demo (`GET /`): mock Tunisian locals can be explored, connected
+with, and messaged in a browser-persisted prototype, alongside an editable
+traveller profile and suggested experiences. The interactive Tunisia map uses
+the public-domain Natural Earth 1:50m country boundary and city coordinates,
+including the country's offshore islands. Its experience listings read published experiences for verified hosts,
+supports city, language, interest, minimum-rating, maximum-price and text
+filters, and ranks the results with the documented language / interest /
+proximity / rating weights. Each result includes a short match explanation.
+`GET /api/experiences` exposes the same search and ranking behavior as JSON.
+The connection and conversation interactions are mock demo state; the host-profile and experience schemas and starter data are owned by their
+Verification and Experience modules; user-facing discovery copy is translated
+in English, French and Arabic.
+
+## 2. Component diagram
 
 ```mermaid
 flowchart TB
-    WEB["Responsive Blade / JavaScript web app"]
-    ADMIN["Admin screens"]
-    AUTH["Auth"]
-    VER["Verification"]
-    EXP["Experience"]
-    MAT["Matching"]
-    BOOK["Booking"]
-    PAY["Payment"]
-    MSG["Messaging"]
-    NOTIF["Notification"]
-    AUDIT["Admin / audit log"]
-    BUS{{"Laravel events and queue"}}
-    DB[("MySQL 8 / SQLite tests")]
-    PRIVATE[("Private disk: identity evidence")]
-    GATEWAY["Payment provider (deferred)"]
-    TRANSLATOR["Translation provider (deferred)"]
+    subgraph Presentation
+        WEB["Web app: tourist & host<br/>(Blade + JS, EN/FR/AR)"]
+        ADM["Admin panel"]
+    end
 
-    WEB --> AUTH
-    WEB --> EXP
-    WEB --> MAT
-    WEB --> BOOK
-    WEB --> MSG
-    ADMIN --> VER
-    ADMIN --> AUDIT
+    subgraph Application["Application: Laravel 12 modules"]
+        AUTH[Auth & Access]
+        VER[Host Verification]
+        EXP[Experience & Availability]
+        MAT[Search & Matching]
+        BOOK[Booking]
+        PAY[Payment]
+        MSG[Messaging]
+        NOTIF[Notification]
+        BUS{{"Event bus + Job queue / scheduler"}}
+    end
+
+    subgraph Data
+        DB[("MySQL 8<br/>ahla_db")]
+        FILES[("Encrypted private disk<br/>ID documents")]
+    end
+
+    subgraph External
+        GW[Payment gateway]
+        TR[Translation API]
+        MAIL[Email provider]
+        MAPS[OpenStreetMap + Leaflet]
+        VID[Video-call link]
+    end
+
+    WEB -->|HTTPS + JSON| AUTH
+    WEB --> EXP & MAT & BOOK & MSG
+    ADM --> VER & AUTH
+    BOOK --> MAT
     BOOK --> PAY
-    BOOK -. scalar-ID events .-> BUS
-    PAY -. status events .-> BUS
-    MSG -. message events .-> BUS
-    BUS --> NOTIF
-    AUTH --> DB
-    VER --> DB
-    VER --> PRIVATE
-    EXP --> DB
-    MAT --> DB
-    BOOK --> DB
-    PAY --> DB
-    MSG --> DB
-    NOTIF --> DB
-    AUDIT --> DB
-    PAY --> GATEWAY
-    MSG --> TRANSLATOR
+    BOOK -.publishes events.-> BUS
+    BUS -.-> NOTIF & MAT
+    VER --> FILES
+    AUTH & VER & EXP & MAT & BOOK & PAY & MSG --> DB
+    PAY --> GW
+    GW -.signed webhook.-> PAY
+    MSG --> TR
+    NOTIF --> MAIL
+    VER --> VID
+    WEB -.-> MAPS
 ```
 
-| Module | Owns |
-|--------|------|
-| Auth | User roles, preferred language, languages, interests, and accounts |
-| Verification | Host profile, identity evidence metadata, call, and decision |
-| Experience | Experiences, recurring availability, and blocked dates |
-| Matching | Verified-host discovery and recommendation explanations |
-| Booking | Booking records, lifecycle rules, and status enum |
-| Payment | Payment records, gateway contract, and payment status enum |
-| Messaging | Booking messages and translation contract |
-| Notification | Laravel database notifications |
-| Admin | Audit log and administrative records |
+### Component responsibilities
 
-`AppServiceProvider` binds each contract using `config/ahla.php`. Local/test
-defaults are fakes; production fails fast if a binding is missing or does not
-implement its contract. The payment provider remains unselected (ADR 0005 /
-issue #11).
+| Component | Responsibility | Talks to |
+|-----------|----------------|----------|
+| Auth & Access | Registration, login, password reset, roles, 30-min session timeout | Users table, all controllers |
+| Host Verification | Applications, ID storage, video-call scheduling, host state machine | Encrypted storage, Notification, video-call link |
+| Experience & Availability | Experiences, weekly slots, blocked dates, meeting points | Map service, DB |
+| Search & Matching | Filters and ranks hosts with strategies; finds alternative hosts | Experience module, DB |
+| Booking | Requests, daily-limit and overlap checks, accept/decline, cancel, complete, booking state machine | Payment, Matching, Event bus |
+| Payment | Authorise, capture, release, refund (refund policies) | Payment gateway (Adapter), DB |
+| Messaging | Booking conversations, contact masking, translation | Translation service (Adapter) |
+| Notification | In-app and email messages for the in-scope events (ADR 0004, decision 10) | Email provider, Event bus |
+| Event bus + queue | Dispatches domain events to listeners; runs timed jobs | All modules |
 
-## 3. Cross-module contracts
+### Scheduled jobs
 
-| Contract | Phase 0 fake behavior |
-|----------|----------------------|
-| `PaymentGateway` | Idempotent authorise/capture/refund; configurable success, decline, and timeout; exposes current status |
-| `Translator` | Configurable translation map; passes the original text through when no entry exists |
-| `HostEligibility::isBookable(hostId)` | Configurable eligibility result; defaults to ineligible |
-| `AvailabilityChecker::isSlotAvailable(hostId, date, start, end)` | Configurable result; defaults to unavailable |
-| `AlternativeHostFinder::find(booking)` | Configurable host-user IDs; defaults to no alternatives |
+| Job | Frequency | What it does |
+|-----|-----------|--------------|
+| `ExpireRequests` | Every 10 min | `requested` bookings older than 12 h → `expired`; release the authorisation; notify the tourist |
+| `AutoComplete` | Every 30 min | `confirmed` bookings that ended 2 h ago → `completed` |
+| `PurgeIdDocuments` | Daily | Delete ID files 90 days after the verification decision |
 
-Domain events include booking requested/confirmed/cancelled/status changed,
-payment status changed, host status changed, message sent, and refund requested.
-Payloads use scalar identifiers, status strings, amounts, and reasons. These events establish the
-handoff shape; queued listeners and real domain workflows are later-phase work.
+Reminders, payouts and review publication are out of v1 ([ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md), decision 12).
+
+## 3. Key modules
+
+| Module | Responsibility | Lives in |
+|--------|----------------|----------|
+| Auth | Accounts, roles, sessions | `app/Modules/Auth/` |
+| Verification | Host applications, ID, video call, `HostState` | `app/Modules/Verification/` |
+| Experience | Experiences, availability, meeting points | `app/Modules/Experience/` |
+| Matching | `MatchingService`, `MatchingStrategy` implementations | `app/Modules/Matching/` |
+| Booking | `BookingService`, `Booking`, `BookingState` | `app/Modules/Booking/` |
+| Payment | `PaymentGateway` adapters, `RefundPolicy` classes | `app/Modules/Payment/` |
+| Messaging | Messages, `Translator` adapter | `app/Modules/Messaging/` |
+| Notification | `NotificationListener`, channels | `app/Modules/Notification/` |
+| Events / Jobs | Domain events, listeners, scheduled jobs | `app/Events/`, `app/Listeners/`, `app/Jobs/` |
+
+### Design patterns (SDD §8)
+
+| Pattern | Applied to |
+|---------|------------|
+| **State** | `HostState` (pending, verified, rejected, suspended) and `BookingState` (requested, confirmed, declined, expired, cancelled, completed) — each state class allows or refuses each action |
+| **Strategy** | `MatchingStrategy` (Language, Interest, Proximity, Rating) combined by `MatchingService` with configurable weights; `RefundPolicy` (`TouristCancellationPolicy`, `HostCancellationPolicy`) |
+| **Observer** (domain events) | `EventBus` with `NotificationListener` and `AuditLogger`; the alternative-host lookup (`AlternativeHostFinder`) runs on a late host cancellation; slow listeners run on the queue |
+| **Adapter** | `PaymentGateway` (one adapter per provider) and `Translator` (provider adapter + fallback returning the original text) |
 
 ## 4. Data model
 
-Money uses `DECIMAL(10,3)` in TND. Never store card data. The Phase 0 migrations
-add to the existing Laravel users table and are ordered so identity/catalog
-tables exist before the booking/payment/message schema.
+Money is `DECIMAL(10,3)` (TND has 3 decimals), never a float. Every host, booking
+and payment status change is written to `audit_log`.
 
 ```mermaid
 erDiagram
     users ||--o{ user_languages : speaks
-    users ||--o{ user_interests : likes
-    users ||--o| host_profiles : "has profile"
-    host_profiles ||--o{ verification_requests : applications
+    users ||--o| host_profiles : "is a host"
+    host_profiles ||--o{ verification_requests : "verified by"
     host_profiles ||--o{ experiences : offers
-    host_profiles ||--o{ availabilities : schedules
+    host_profiles ||--o{ availability : sets
     host_profiles ||--o{ blocked_dates : blocks
-    users ||--o{ bookings : tourist
-    users ||--o{ bookings : host
-    experiences ||--o{ bookings : selected
-    bookings ||--o| payments : payment
-    bookings ||--o{ messages : conversation
-    users ||--o{ messages : sender
-    users ||--o{ messages : recipient
-    users ||--o{ audit_log : actor
+    host_profiles ||--o{ bookings : "is booked"
+    users ||--o{ bookings : "tourist requests"
+    experiences ||--o{ bookings : "booked as"
+    bookings ||--|| payments : "paid by"
+    bookings ||--o{ messages : has
+    users ||--o{ audit_log : "acts in"
+
+    users {
+        bigint id PK
+        enum role "tourist, host, admin"
+        string email UK
+        string phone
+        string password_hash
+        string preferred_lang
+    }
+    host_profiles {
+        bigint user_id PK
+        enum status "pending, verified, rejected, suspended"
+        text bio
+        string city
+        decimal lat
+        decimal lng
+        decimal rating_avg "nullable until reviews exist"
+    }
+    verification_requests {
+        bigint id PK
+        bigint host_id FK
+        string id_document_path "private disk"
+        datetime video_call_at
+        string decision
+        bigint decided_by FK
+    }
+    experiences {
+        bigint id PK
+        bigint host_id FK
+        string title
+        tinyint duration_hours "1-6"
+        decimal price_per_person "10,3"
+        tinyint max_group_size "max 6"
+        boolean published
+    }
+    availability {
+        bigint id PK
+        bigint host_id FK
+        tinyint weekday
+        time start_time
+        time end_time
+    }
+    blocked_dates {
+        bigint id PK
+        bigint host_id FK
+        date blocked_on
+    }
+    bookings {
+        bigint id PK
+        bigint host_id FK
+        bigint experience_id FK
+        bigint tourist_id FK
+        date booking_date
+        time start_time
+        time end_time
+        tinyint group_size
+        string location
+        decimal total_price "10,3"
+        enum status "requested, confirmed, declined, expired, cancelled, completed"
+        datetime expires_at
+        string cancelled_by "tourist or host"
+        datetime cancelled_at
+        string cancellation_reason
+    }
+    payments {
+        bigint id PK
+        bigint booking_id FK, UK
+        decimal amount
+        enum status "authorised, captured, released, refunded, failed"
+        decimal refunded_amount
+        string gateway_ref
+    }
+    messages {
+        bigint id PK
+        bigint booking_id FK
+        bigint sender_id FK
+        text original_text
+        text translated_text
+    }
+    audit_log {
+        bigint id PK
+        string entity
+        bigint entity_id
+        string old_status
+        string new_status
+        bigint actor_id FK
+        string reason
+    }
 ```
 
-| Table | Important fields and rules |
-|-------|-----------------------------|
-| `users` | `role` (`tourist`, `host`, `admin`), `phone`, `preferred_language` |
-| `user_languages`, `user_interests` | Normalized values unique per user; language is indexed |
-| `host_profiles` | User FK, `pending/verified/rejected/suspended`, display name, bio, city, coordinates, public photo URL, nullable rating average; city/status indexed |
-| `verification_requests` | Host-profile FK, private evidence path, call link/time, submitted/scheduled/decided status, decision/reason, deciding admin |
-| `experiences` | Host-profile FK, title/category/interest tags/description, duration, meeting point, per-person TND price, group limit, publish flag |
-| `availabilities`, `blocked_dates` | Recurring weekday time slots and unique host/date blocks |
-| `bookings` | Tourist/host user FKs, experience FK, local `date/start_time/end_time`, group size, `location`, `displayed_price` snapshot, status, expiry and cancellation details |
-| `payments` | One per booking, TND `amount/refunded_amount`, optional `gateway_ref`, status and lifecycle timestamps |
-| `messages` | Booking, sender and recipient FKs; `original_text`, `translated_text`, `language`, translation language, read timestamp |
-| `notifications` | Laravel UUID notification with polymorphic recipient and JSON data |
-| `audit_log` | Entity/ID, old/new status, actor, reason, timestamp; generic entity ID is not a foreign key |
+Integrity rules:
 
-There are no reviews, disputes, reports, payout, commission, strike, or reminder
-tables/jobs in v1. `rating_avg` is nullable until review policy is resolved;
-unrated hosts use the 4.0 matching default and are excluded only when a minimum
-rating filter is explicitly selected.
+- The daily limit and the overlap check are enforced by locking the host's bookings for that date (`SELECT … FOR UPDATE`) *before* counting, inside the same transaction that inserts or confirms the booking. Only `confirmed` bookings count. Intervals are half-open `[start, end)`, so a booking may start exactly when another ends, and times are in Africa/Tunis (ADR 0004, decision 11).
+- A booking's `payments` row is created in the same transaction as the booking; a failed authorisation rolls everything back.
+- `bookings` has `INDEX(host_id, booking_date)` (locking and overlap) and `INDEX(status, expires_at)` (expiry job).
+- ID documents live on the private disk and are deleted by `PurgeIdDocuments` 90 days after the decision.
+- Not in v1: reviews, disputes, reports, and commission or payout columns ([ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md), decision 12).
 
-## 5. Persisted state vocabulary and business rules
+### State machines
 
-Host states: `pending`, `verified`, `rejected`, `suspended`. Only verified
-hosts are eligible for search and booking. Booking states:
-`requested`, `confirmed`, `declined`, `expired`, `cancelled`, `completed`.
-Payment states: `authorised`, `captured`, `released`, `refunded`, `failed`.
+```mermaid
+stateDiagram-v2
+    [*] --> pending: host applies (profile + ID)
+    pending --> verified: admin approves after ID check and video call
+    pending --> rejected: admin rejects (reason)
+    verified --> suspended: admin suspends (reason)
+    suspended --> verified: admin reinstates
+    rejected --> pending: host re-applies
+```
 
-The payment sequence is authorise on request, capture on host acceptance, and
-release on decline/expiry. A booking is confirmed only after successful capture.
-If the selected provider cannot separate authorisation and capture, charge on
-request and refund on decline/expiry. Request TTL is 12 hours.
+```mermaid
+stateDiagram-v2
+    [*] --> requested: tourist requests (amount authorised)
+    requested --> confirmed: host accepts and the capture succeeds
+    requested --> declined: host declines (authorisation released)
+    requested --> expired: no answer in 12 h (authorisation released)
+    confirmed --> cancelled: tourist or host cancels (refund)
+    confirmed --> completed: automatic, 2 h after the end time
+    declined --> [*]
+    expired --> [*]
+    cancelled --> [*]
+    completed --> [*]
+```
 
-The daily limit and overlap check count confirmed bookings only and must be
-rechecked inside the locked transaction on host acceptance (NFR-14). Times use
-`Africa/Tunis`; intervals are half-open `[start, end)`, and bookings cannot cross
-midnight. Host cancellation refunds 100%; the configurable interim tourist
-policy is 100% at least 48 hours before, 50% 24–48 hours before, and 0% under
-24 hours. Every host, booking, or payment status transition must write
-`audit_log`.
+## 5. Key flows
 
-For host cancellation under 24 hours, the alternative-host policy is up to three
-verified, available hosts in the same city, excluding the cancelling host.
-Language affects ranking but is not a filter; an empty result is valid.
+### 5.1 Request a booking and the host accepts (UC-06, UC-07)
 
-These are accepted design decisions with remaining policy questions tracked in
-ADR 0004. Booking/host state transition services, locked transactions, expiry
-jobs, and operational status auditing are not implemented by the Phase 0
-schema/contracts alone.
+```mermaid
+sequenceDiagram
+    actor T as Tourist
+    participant API as BookingController
+    participant BS as BookingService
+    participant DB as MySQL
+    participant PG as PaymentGateway
+    participant BUS as EventBus
+    actor H as Host
 
-## 6. Recommendation and prototype boundary
+    T->>API: POST /api/bookings
+    API->>BS: request(experience, date, start, group)
+    BS->>DB: BEGIN, lock host's bookings for the date
+    BS->>BS: host verified? <2 confirmed? no overlap? group fits?
+    alt rule violated
+        BS-->>T: 409 host full / slot taken (reason)
+    else rules pass
+        BS->>PG: authorise(total)
+        alt card refused
+            PG-->>BS: refused
+            BS->>DB: ROLLBACK
+            BS-->>T: 402 payment could not be authorised
+        else authorised
+            BS->>DB: INSERT booking (requested, expires in 12 h) + payment, COMMIT
+            BS->>BUS: BookingRequested
+            BUS-->>H: in-app + email (queued)
+            BS-->>T: 201 booking requested
+        end
+    end
+    H->>API: POST /api/bookings/{id}/accept
+    API->>BS: accept(booking)
+    BS->>DB: BEGIN, lock date, re-count confirmed bookings and overlap
+    BS->>PG: capture(amount)
+    alt capture failed or timed out
+        PG-->>BS: not successful
+        BS->>DB: payment = failed, booking not confirmed, COMMIT
+        BS-->>H: 402 payment failed
+    else captured
+        BS->>DB: booking = confirmed, payment = captured, COMMIT
+        BS->>BUS: BookingConfirmed
+        BUS-->>T: notification, contact details revealed
+    end
+```
 
-The decision for FR-09/FR-10 is a deterministic score:
+### 5.2 Host cancels a confirmed booking (UC-08)
 
-`0.4 × language + 0.3 × interests + 0.2 × proximity + 0.1 × rating`
+A host cancellation always refunds 100%. Less than 24 hours before the start, the tourist
+also gets alternative hosts.
 
-Proximity is `1 - distance / 15 km` when both sides have coordinates, otherwise
-1 for the same city and 0 for a different city. Unrated hosts score as 4.0.
-Every result needs a human-readable reason. Whether this qualifies as
-“AI-generated” is deferred to issue #24, owned by Nour with the instructor.
+```mermaid
+sequenceDiagram
+    actor H as Host
+    participant BS as BookingService
+    participant RP as HostCancellationPolicy
+    participant PG as PaymentGateway
+    participant BUS as EventBus
+    participant AF as AlternativeHostFinder
+    actor T as Tourist
 
-The existing demo's `MatchingService` currently ranks database-backed
-experiences and explains city/language/interest matches; traveller coordinates,
-the final proximity strategy, and production recommendation workflows remain
-future work. The separate social connect/chat state in the demo is mock data,
-not the Candidate like/pass or mutual-match backend (FR-21).
+    H->>BS: cancelByHost(booking, reason)
+    BS->>RP: refundPercent(booking, now)
+    RP-->>BS: 100%
+    BS->>PG: refund(100%)
+    BS->>BUS: BookingCancelled, RefundRequested
+    alt less than 24 h before the start
+        BUS->>AF: up to 3 verified hosts in the same city, free at that time
+        AF-->>T: alternatives, or "no host available"
+    end
+    BUS-->>T: cancellation + refund notification
+```
 
-## 7. Decisions and deferred items
+## 6. The AI-assisted component
 
-- [ADR 0002](decisions/0002-use-laravel-modular-monolith.md): Laravel 12 modular monolith.
-- [ADR 0003](decisions/0003-authorise-then-capture-with-locked-transactions.md) as refined by [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md): payment and booking states.
-- [ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md): SRS/SDD reconciliation, interim defaults, deferred questions and owners.
-- [`docs/requirements/ID-mapping.md`](requirements/ID-mapping.md): old-to-current requirement identifiers.
+**What it is.** Host recommendation (FR-09, FR-10 in SRS FV): given a tourist's
+preferences, return an ordered list of eligible hosts, each with a human-readable
+reason tied to an input preference or host attribute.
 
-The payment provider (#11), tourist refund final policy (#13), ID retention/legal
-basis (#15), source of ratings (#23), AI acceptance (#24), admin MFA (#35),
-backup RPO/RTO (#39), load profile (#38), and SDD reissue are explicitly deferred
-with owners in ADR 0004. Candidate FR-21 to FR-25 remain parked.
+**How it works today (design, not yet built).** `MatchingService.search()`:
+
+1. Filter: only `verified` hosts with a free slot on the date and a group size that fits. A shared language is a ranking factor, not a filter.
+2. Score = `0.4 × language + 0.3 × interests + 0.2 × proximity + 0.1 × rating`, where language = 1 if the host speaks the tourist's preferred language (else 0.5), interests = shared ÷ tourist's interests, proximity = `1 − distance ÷ 15 km` when both sides have coordinates, otherwise 1 for the same city and 0 for another city, rating = average ÷ 5 (unrated hosts count as 4.0 so they are not hidden).
+3. The two strongest criteria become the "why this host" tags (e.g. "speaks French · loves food"). Weights live in configuration.
+
+**What goes in / out.** In: tourist preferences (city, date, language, interests, group size, location) and host profile data. Out: ranked hosts + `whyMatched` tags (`GET /api/search`). No card data and no ID documents are ever used.
+
+**Translation** (FR-19 in SRS FV) is a separate external service behind the `Translator` interface.
+
+**If it fails.** Scoring is local and deterministic, so there is no external dependency to fail. If translation is unavailable, the original text is shown with a "translation unavailable" note (NFR-11). If an LLM is added later it must be optional and fall back to this scoring — that would need its own ADR.
+
+## 7. Known trade-offs / open questions
+
+**The SDD and SRS FV are reconciled.** The SDD was written against the first SRS, and SRS FV supersedes it.
+[ADR 0004](decisions/0004-reconcile-srs-fv-and-sdd.md) records every decision (host states, payment flow, booking
+states, request expiry, refunds, alternative hosts, platform, messaging, notifications, time zone, and what is out
+of v1), and [`requirements/ID-mapping.md`](requirements/ID-mapping.md) maps the old ids. The design above already
+reflects those decisions.
+
+**Still open** (owners and the default used meanwhile are in ADR 0004): tourist refund percentages; where ratings
+come from before reviews exist; whether a rule-based score counts as "AI-generated"; ID-evidence retention and legal
+basis; admin two-factor authentication; the payment provider ([ADR 0005](decisions/) once written); backup RPO and RTO
+and the load profile for "thousands" of users; whether to reissue the SDD as v1.1. Matching weights should also be
+confirmed with real users after the first usability test.
+
+**Trade-offs accepted.** The monolith scales as one unit, so translation is isolated on the queue. Microservices and a
+message broker were rejected as too heavy for a student team and risky for money and limits.

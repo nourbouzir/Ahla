@@ -12,11 +12,10 @@ handy.
 4. **CI must pass** (green check) before merging.
 5. **Never commit secrets** (`.env`, API keys). They belong in `.env` only.
 
-> Branch protection is unavailable for this private repository on the current
-> plan. Enforcing required PRs, one approval, and CI on `main` is **deferred**;
-> owner: Nour. Until the repository is public or the plan changes, these remain
-> team rules. CODEOWNERS review requests may also be unavailable on this plan.
-> Automatic branch deletion after merge is enabled.
+> GitHub branch protection is not available on our plan (private repo), so rules
+> 1–4 are enforced by us, not by GitHub. If the repo goes public or the plan is
+> upgraded, turn on *Require a pull request*, *1 approval* and the *CI* check for
+> `main` (Settings → Branches) and tick that box on issue #3.
 
 ## 2. Branch naming
 
@@ -27,8 +26,8 @@ docs/<short-name>     documentation      e.g. docs/architecture
 chore/<short-name>    tooling/config     e.g. chore/add-linter
 ```
 
-For a planned issue, include its code: `feat/<code>-<short-name>`, e.g.
-`feat/p0-5-identity-schema`.
+For a planned issue, put its code in the name: `feat/<code>-<short-name>`, e.g.
+`feat/p0-5-identity-schema` for issue P0-5 (#5).
 
 ## 3. Daily flow
 
@@ -92,21 +91,42 @@ only warns — it won't block you.
 Follow your team charter's conflict rule (from Lab 0). Default: discuss, then if
 still split, the person who owns that area decides, and we revisit later.
 
-## 9. Working in parallel
+## 9. Working in parallel (two people, one codebase)
 
-The phase and issue plan is `docs/PROJECT_PLAN.md`.
+The plan (phases, issues, who owns what) is `docs/PROJECT_PLAN.md`. The rules
+below are what keep our work separate while we build and let it merge cleanly.
 
-- Work only on issues whose dependencies are complete. Use one issue branch and
-  PR per change, with `Closes #<issue>`.
-- Follow `.github/CODEOWNERS` for module ownership. Ask before changing another
-  owner's module; shared contracts and events require both owners' review.
-- Keep shared-file changes (Composer/npm manifests, `.env.example`,
-  `AI_CONTEXT.md`, `docs/architecture.md`, provider registration, and the root
-  seeder) small and in their own PR when practical.
-- Never edit a migration already merged to `main`; add a later migration.
-  Identity/catalog migrations precede booking/payment/message migrations.
-- Rebase on `origin/main` before opening the PR. Aim for fewer than 400 changed
-  lines, request the other person's review within 24 hours, and squash-merge.
-- Add one changelog line per PR. If a changelog conflict occurs, keep both.
-- At each phase gate, stop, merge the work, then run `composer test` and
-  `composer lint` on `main`.
+**Choosing work**
+- Take an issue assigned to you whose *Depends on* boxes are all ticked.
+- Branch `feat/<code>-<short-name>` (see section 2); open the PR with `Closes #<issue>`.
+
+**Staying out of each other's way**
+- **Stay in your own modules.** Ownership is listed in `.github/CODEOWNERS`
+  (Nour: Auth, Verification, Experience, Matching, Notification, Admin. Salma:
+  Booking, Payment, Messaging, `app/Contracts`, `app/Events`, `app/Listeners`,
+  `app/Jobs`). Every module keeps its own routes, migrations, views, language
+  files and seeder in its folder, so you rarely edit the same file.
+- **Need a change in the other person's module?** Ask on the issue, or make the
+  change in its own tiny PR and request their review. Don't mix it into a feature PR.
+- **Contracts need both.** After P0-4, any change to `app/Contracts/**` or
+  `app/Events/**` needs both of us on the PR, because both tracks code against them.
+- **Shared files get a PR of their own** and are merged first, so the other person
+  rebases onto them: `composer.json` / `composer.lock`, `package.json` /
+  `package-lock.json`, `.env.example`, `AI_CONTEXT.md`, `docs/architecture.md`,
+  `bootstrap/providers.php`. Adding a dependency is its own tiny PR with the reason.
+- **Migrations:** never edit a migration that is already on `main`; add a new one.
+  Identity tables (Nour) are created before booking tables (Salma), which reference them.
+
+**Keeping `main` mergeable**
+- **Rebase every morning**, and before opening your PR:
+  `git fetch origin && git rebase origin/main`. Resolve conflicts on your branch, never on `main`.
+- **Small PRs:** aim for under ~400 changed lines (not counting lock files); split bigger work.
+- **The other person reviews, within 24 hours.** Nobody approves their own PR. If you
+  are blocked, comment on the issue and mention them.
+- **Squash-merge.** The PR title becomes the commit message, so write it as a
+  Conventional Commit. The branch is deleted automatically after the merge.
+- **`docs/CHANGELOG.md`:** one line per PR, added at the end of the right list. If it
+  conflicts, keep both lines.
+
+**At the end of each phase** we both stop, merge everything, and run `composer test`
+and `composer lint` on `main` before the next phase starts.
