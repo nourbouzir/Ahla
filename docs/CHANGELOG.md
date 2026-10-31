@@ -23,14 +23,16 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - ADR 0002 (modular monolith on Laravel) and ADR 0003 (authorise-then-capture payments, proposed).
 - PHP/Laravel job in CI (runs once `composer.json` exists); Laravel `.env.example`.
 - `docs/setup-report.md` (Lab 6 report).
-- `.github/CODEOWNERS` and a "Working in parallel" section in `CONTRIBUTING.md`: module ownership, review, rebase and merge rules for the two of us (issue #3, P0-3).
+- `docs/PROJECT_PLAN.md`: 6 phases split into 43 GitHub issues, assigned to Nour and Salma with hand-offs and merge rules.
+- ADR 0004 (reconcile SRS FV and the SDD: host and booking states, payment flow, refunds, alternative hosts, scope of v1) and `docs/requirements/ID-mapping.md` (old SRS/SDD ids -> SRS FV ids) (issue #2, P0-2).
 
 ### Changed
-- Tuned the discovery, profile, map, and chat layouts for phone-sized screens, larger touch targets, safe areas, and readable mobile text.
+- `AI_CONTEXT.md` section 6 and `docs/architecture.md` (states, ER diagram, jobs, flows, open questions) now follow ADR 0004; ADR 0003 is Accepted.
 - Framework is Laravel 12 instead of 11: Composer blocks every Laravel 11 release because of security advisories (see ADR 0002).
 - `.gitignore`, `.editorconfig` and recommended VS Code extensions narrowed to the PHP/Node stack; the `logs/` rule is now `/logs/` so Laravel's `storage/logs` folder is kept in git.
 - `scripts/update-structure.sh` lists files through git, so ignored files (`vendor/`, `.env`, caches) never appear in the README tree.
 - Pint applied to three skeleton files (`User.php`, `config/auth.php`, `UserFactory.php`): import style only.
+
 
 ### Removed
 - `stack-appendices/` (no longer needed after choosing the stack).
