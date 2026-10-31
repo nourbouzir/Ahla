@@ -60,10 +60,10 @@ return [
     'city' => 'Ville',
     'disabled' => 'Ce compte a été désactivé. Contactez le support si vous pensez qu’il s’agit d’une erreur.',
     'demo_title' => 'Comptes de démonstration',
-    'demo_text' => 'Pour les tests manuels uniquement. Tous les comptes de démonstration utilisent le mot de passe indiqué. Ce panneau est masqué en production.',
+    'demo_text' => 'Pour les tests manuels uniquement. Un clic vous connecte. Tous les comptes de démonstration utilisent le mot de passe indiqué. Ce panneau est masqué en production.',
     'demo_admin' => 'Admin',
     'demo_guide' => 'Guide',
     'demo_tourist' => 'Touriste',
-    'demo_use' => 'Utiliser',
+    'demo_use' => 'Se connecter',
     'demo_password' => 'Mot de passe',
 ];

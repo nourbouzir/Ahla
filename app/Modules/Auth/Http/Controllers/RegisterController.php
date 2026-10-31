@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Enums\Role;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,13 @@ class RegisterController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Creating an account while another one is open: leave the old one first, cleanly.
+        if (Auth::check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc', 'max:190', 'unique:users,email'],
@@ -34,6 +42,7 @@ class RegisterController extends Controller
         $user->preferred_language = app()->getLocale();
         $user->save();
 
+        event(new Registered($user));
         Auth::login($user);
         $request->session()->regenerate();
 

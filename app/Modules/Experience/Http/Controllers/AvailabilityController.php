@@ -2,6 +2,7 @@
 
 namespace App\Modules\Experience\Http\Controllers;
 
+use App\Events\ActivityRecorded;
 use App\Http\Controllers\Controller;
 use App\Modules\Experience\Models\Availability;
 use App\Modules\Experience\Models\BlockedDate;
@@ -41,6 +42,7 @@ class AvailabilityController extends Controller
             return back()->withErrors(['starts_at' => __('experience::messages.slot_overlap')])->withInput();
         }
 
+        ActivityRecorded::dispatch('availability', 'hours_added', $request->user()->id, $profile->id, __('experience::messages.days.'.$data['day_of_week'], [], 'en').' '.$data['starts_at'].'-'.$data['ends_at']);
         $profile->availabilities()->create([
             'day_of_week' => $data['day_of_week'],
             // Seconds included so time strings compare correctly on every database.
@@ -55,6 +57,7 @@ class AvailabilityController extends Controller
     {
         abort_unless($slot->host_profile_id === $request->user()->hostProfile?->id, 404);
         $slot->delete();
+        ActivityRecorded::dispatch('availability', 'hours_removed', $request->user()->id, $slot->host_profile_id);
 
         return back()->with('status', __('experience::messages.saved'));
     }
@@ -69,6 +72,7 @@ class AvailabilityController extends Controller
             'reason' => ['nullable', 'string', 'max:160'],
         ]);
 
+        ActivityRecorded::dispatch('availability', 'day_off_added', $request->user()->id, $profile->id, $data['date']);
         $profile->blockedDates()->firstOrCreate(['date' => $data['date']], ['reason' => $data['reason'] ?? null]);
 
         return back()->with('status', __('experience::messages.saved'));
@@ -78,6 +82,7 @@ class AvailabilityController extends Controller
     {
         abort_unless($blocked->host_profile_id === $request->user()->hostProfile?->id, 404);
         $blocked->delete();
+        ActivityRecorded::dispatch('availability', 'day_off_removed', $request->user()->id, $blocked->host_profile_id);
 
         return back()->with('status', __('experience::messages.saved'));
     }

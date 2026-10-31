@@ -89,4 +89,7 @@ return [
     'footer_account' => 'Compte',
     'new' => 'Nouveau',
     'page_expired' => 'Votre page a expiré, rien n’a été envoyé. Veuillez réessayer.',
+    'signed_in_as' => 'Vous êtes connecté en tant que :name (:role).',
+    'switch_hint' => 'Connectez-vous ou inscrivez-vous ci-dessous pour changer de compte.',
+    'continue_as' => 'Continuer',
 ];

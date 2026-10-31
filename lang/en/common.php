@@ -89,4 +89,7 @@ return [
     'footer_account' => 'Account',
     'new' => 'New',
     'page_expired' => 'Your page expired, so nothing was sent. Please try again.',
+    'signed_in_as' => 'You are logged in as :name (:role).',
+    'switch_hint' => 'Log in or sign up below to switch to another account.',
+    'continue_as' => 'Continue',
 ];

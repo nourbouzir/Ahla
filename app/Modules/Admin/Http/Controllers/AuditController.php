@@ -15,6 +15,6 @@ class AuditController extends Controller
             ->when($request->query('entity'), fn ($q, $entity) => $q->where('entity', $entity))
             ->latest('created_at')->latest('id')->paginate(50)->withQueryString();
 
-        return view('admin::audit', compact('logs'));
+        return view('admin::audit', ['logs' => $logs, 'entity' => $request->query('entity')]);
     }
 }

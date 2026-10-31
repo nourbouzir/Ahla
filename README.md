@@ -61,13 +61,13 @@ Every demo account uses the password **`password`**. On the login page (developm
 
 | Role | Email | Where you land |
 |---|---|---|
-| Admin | `admin@ahla.test` | `/admin`: the admin dashboard |
+| Admin | `admin@ahla.test` | `/admin`: the admin dashboard (switch accounts any time from the login page) |
 | Guide | `amel@ahla.test` | `/host/dashboard`: the guide dashboard |
 | Guide with a pending request | `youssef@ahla.test` | accept or decline from the overview |
 | Guide waiting for verification | `omar@ahla.test` | his application is in the admin queue: approve it from `admin@ahla.test` |
 | Tourist | `tourist@ahla.test` | the home page |
 
-A ten-minute guided tour of the main journey is in **[docs/demo.md](docs/demo.md)**.
+**New here?** Follow the step-by-step guide for tourists, guides and admins in **[docs/user-guide.md](docs/user-guide.md)**. A ten-minute demo script is in [docs/demo.md](docs/demo.md).
 
 ## What you can do
 
@@ -260,6 +260,7 @@ Each module owns its routes, views, translations, migrations and seeder, so two 
 
 | Read this | To learn |
 |---|---|
+| [docs/user-guide.md](docs/user-guide.md) | **How to use the app as a tourist, guide or admin** |
 | [docs/demo.md](docs/demo.md) | A ten-minute tour, plus the guide and admin spaces |
 | [docs/architecture.md](docs/architecture.md) | How the system is put together |
 | [docs/decisions/](docs/decisions/) | Why we chose what we chose (7 ADRs) |

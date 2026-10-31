@@ -1,4 +1,5 @@
 <x-layouts.app :title="__('auth::messages.register_title')">
+    <x-signed-in-notice />
     <form method="POST" action="{{ route('register') }}" class="card mx-auto max-w-md">
         @csrf
         <h1 class="text-2xl font-bold">{{ __('auth::messages.register_title') }}</h1>

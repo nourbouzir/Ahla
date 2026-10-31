@@ -60,10 +60,10 @@ return [
     'city' => 'City',
     'disabled' => 'This account has been disabled. Contact support if you think this is a mistake.',
     'demo_title' => 'Demo accounts',
-    'demo_text' => 'For manual testing only. All demo accounts use the password shown. This panel is hidden in production.',
+    'demo_text' => 'For manual testing only. One click logs you in. All demo accounts use the password shown. This panel is hidden in production.',
     'demo_admin' => 'Admin',
     'demo_guide' => 'Guide',
     'demo_tourist' => 'Tourist',
-    'demo_use' => 'Use',
+    'demo_use' => 'Log in',
     'demo_password' => 'Password',
 ];

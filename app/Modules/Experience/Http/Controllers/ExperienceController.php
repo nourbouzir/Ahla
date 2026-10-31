@@ -2,6 +2,7 @@
 
 namespace App\Modules\Experience\Http\Controllers;
 
+use App\Events\ActivityRecorded;
 use App\Http\Controllers\Controller;
 use App\Modules\Experience\Models\Experience;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,8 @@ class ExperienceController extends Controller
         $data = $this->validated($request);
         $photo = $this->storePhoto($request) ?? self::PLACEHOLDER;
 
-        $profile->experiences()->create($data + ['photo_url' => $photo]);
+        $experience = $profile->experiences()->create($data + ['photo_url' => $photo]);
+        ActivityRecorded::dispatch('experience', 'created', $request->user()->id, $experience->id, $experience->title);
 
         return redirect()->route('host.experiences.index')->with('status', __('experience::messages.saved'));
     }
@@ -60,6 +62,7 @@ class ExperienceController extends Controller
         }
 
         $experience->update($data);
+        ActivityRecorded::dispatch('experience', 'updated', $request->user()->id, $experience->id, $experience->title);
 
         return redirect()->route('host.experiences.index')->with('status', __('experience::messages.saved'));
     }
@@ -69,6 +72,7 @@ class ExperienceController extends Controller
     {
         $this->authorizeOwner($request, $experience);
         $experience->update(['published' => ! $experience->published]);
+        ActivityRecorded::dispatch('experience', $experience->published ? 'published' : 'unpublished', $request->user()->id, $experience->id, $experience->title);
 
         return back()->with('status', __('experience::messages.saved'));
     }

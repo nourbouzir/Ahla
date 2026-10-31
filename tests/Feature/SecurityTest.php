@@ -27,7 +27,7 @@ class SecurityTest extends TestCase
      *  can:*   - listed by Gate ability and compared with Permissions::MATRIX
      */
     private const ALLOWED_PUBLIC = [
-        'home', 'locale.update', 'search', 'hosts.show', 'api.search', 'payments.webhook', 'api.health',
+        'home', 'login', 'login.store', 'register', 'register.store', 'locale.update', 'search', 'hosts.show', 'api.search', 'payments.webhook', 'api.health',
     ];
 
     private const ALLOWED_AUTH_ONLY = [
