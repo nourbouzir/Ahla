@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('verification::messages.title')">
+<x-dash area="host" :title="__('verification::messages.title')" :heading="false">
     <div class="card mx-auto max-w-xl">
         <h1 class="text-2xl font-bold">{{ __('verification::messages.title') }}</h1>
 
@@ -33,4 +33,4 @@
             @endif
         @endif
     </div>
-</x-layouts.app>
+</x-dash>

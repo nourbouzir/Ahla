@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('experience::messages.title')">
+<x-dash area="host" :title="__('experience::messages.title')" :heading="false">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-2xl font-bold">{{ __('experience::messages.title') }}</h1>
         <div class="flex gap-2">
@@ -34,4 +34,4 @@
             @endforelse
         </ul>
     @endif
-</x-layouts.app>
+</x-dash>

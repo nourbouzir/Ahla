@@ -1,6 +1,4 @@
-<x-layouts.app :title="__('common.nav.host_bookings')">
-    <h1 class="text-2xl font-bold">{{ __('common.nav.host_bookings') }}</h1>
-    @error('booking')<p class="error-text" role="alert">{{ $message }}</p>@enderror
+<x-dash area="host" :title="__('common.nav.host_bookings')">
 
     <h2 class="mt-4 text-lg font-semibold">{{ __('booking::messages.waiting') }}</h2>
     <ul class="mt-2 space-y-3">
@@ -35,4 +33,4 @@
             </li>
         @endforeach
     </ul>
-</x-layouts.app>
+</x-dash>

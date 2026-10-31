@@ -27,6 +27,12 @@ return [
         'Tozeur' => [33.9197, 8.1335],
     ],
     'currency' => 'TND',
+    // Indicative platform revenue = net volume x this rate. Reporting only: nothing is charged (ADR 0004, ADR 0007).
+    'commission_rate' => (float) env('AHLA_COMMISSION_RATE', 0.10),
+    // Show the demo-account panel on the login page. Never in production.
+    'show_demo_logins' => in_array(env('AHLA_SHOW_DEMO_LOGINS'), [null, ''], true)
+        ? env('APP_ENV') !== 'production'
+        : filter_var(env('AHLA_SHOW_DEMO_LOGINS'), FILTER_VALIDATE_BOOLEAN),
     // Requests per minute and IP on GET /api/search (raise it for load tests).
     'search_rate_limit' => (int) env('AHLA_SEARCH_RATE_LIMIT', 60),
     // Sandbox gateway only: share of calls that fail on purpose (0 to 1). For soak and chaos tests, never in production.

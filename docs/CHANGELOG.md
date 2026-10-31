@@ -7,8 +7,11 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 
 ## [Unreleased]
 
+### Added
+- Guide space (`/host/dashboard`): overview with requests to answer (live countdown), next-7-days agenda, earnings chart and setup checklist; client list with stages, history and private notes; inbox of booking chats with unread counts; month calendar with days off; earnings page with CSV export. Admin space (`/admin`): platform overview with an attention list, user list and detail with account locking, guide monitoring, revenue page (paid, refunded, net volume, indicative revenue) with CSV export. Demo logins on the login page (development only) and 40 seeded past bookings so every chart has data (ADR 0007).
+
 ### Changed
-- Design pass: Tunisian theme (Sidi Bou Said blue, whitewash, terracotta, gold and olive as Tailwind theme variables), zellige tile patterns in CSS/SVG, local fonts (Amiri headings, Inter and Noto Sans Arabic body, bundled by Vite), a new Ahla logo and favicon, a richer home page (hero, how it works, featured cities, tourist and host calls to action), and profile pictures (upload, square re-encode without EXIF, initials fallback) shown on the header, search, host pages, bookings and chat. No booking, payment or permission logic changed.
+- Full redesign: neutral product-style layout (Inter and Noto Sans Arabic, one palette of door blue, whitewash, terracotta, gold and olive), sticky header, side menus for the guide and admin spaces, scroll and load animations that switch off for reduced motion, restored arched-door logo.
 
 ### Removed
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.

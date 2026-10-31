@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('experience::messages.form')">
+<x-dash area="host" :title="__('experience::messages.form')" :heading="false">
     @php($editing = $experience->exists)
     <form method="POST" enctype="multipart/form-data" class="card mx-auto max-w-xl"
         action="{{ $editing ? route('host.experiences.update', $experience) : route('host.experiences.store') }}">
@@ -36,4 +36,4 @@
         <label class="mt-4 flex items-center gap-2"><input type="checkbox" name="published" value="1" @checked(old('published', $experience->published))> {{ __('experience::messages.published') }}</label>
         <button class="btn btn-primary mt-6" type="submit">{{ __('common.actions.save') }}</button>
     </form>
-</x-layouts.app>
+</x-dash>

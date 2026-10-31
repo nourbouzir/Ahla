@@ -1,38 +1,34 @@
 @import "tailwindcss";
 
-/* Fonts are npm packages bundled by Vite and served from our own origin (the CSP allows nothing else).
-   Only the Latin and Arabic subsets we need are loaded. */
+/* Fonts: Inter for Latin text, Noto Sans Arabic for Arabic. Bundled by Vite and served from our own origin (the CSP allows nothing else). */
 @import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
 @import "@fontsource/inter/latin-600.css";
 @import "@fontsource/inter/latin-ext-400.css";
-@import "@fontsource/amiri/latin-400.css";
-@import "@fontsource/amiri/latin-700.css";
-@import "@fontsource/amiri/arabic-400.css";
-@import "@fontsource/amiri/arabic-700.css";
 @import "@fontsource/noto-sans-arabic/arabic-400.css";
+@import "@fontsource/noto-sans-arabic/arabic-500.css";
 @import "@fontsource/noto-sans-arabic/arabic-600.css";
 
 /*
- * Ahla theme, defined once here. Colours come from Tunisian streets:
- *   door  - the deep blue of the doors of Sidi Bou Said (main colour)
- *   wash  - whitewashed walls (backgrounds)
- *   clay  - terracotta pottery (accent)
- *   gold  - brass studs and sand (small touches, never for text)
- *   olive - olive groves (small touches, success states)
- * Text pairs below were checked for 4.5:1 contrast (WCAG AA).
+ * Design tokens, defined once. The palette comes from Tunisian streets:
+ *   accent (door blue)  - the deep blue doors of Sidi Bou Said: buttons, links, focus
+ *   wash                - whitewashed walls: page background
+ *   clay (terracotta)   - pottery: small highlights and counters
+ *   gold, olive         - brass studs and olive groves: tiny touches, olive for success
+ * Neutral greys carry the text. Pairs used in the app: zinc-900 / zinc-600 on white, white on
+ * accent-600 (7:1), accent-700 links on white (9:1), clay-700 on white (6:1), olive-700 on olive-100 (6:1): all pass WCAG AA.
  */
 @theme {
-    /* Body: Inter for Latin text, Noto Sans Arabic for Arabic. Headings: Amiri, a classical Naskh serif that covers both scripts. */
-    --font-sans: "Inter", "Noto Sans Arabic", system-ui, sans-serif;
-    --font-display: "Amiri", Georgia, serif;
+    --font-sans: "Inter", "Noto Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 
-    --color-door-50: #eef4fb;
-    --color-door-100: #d6e4f4;
-    --color-door-200: #a9c6e6;
-    --color-door-600: #1f5a99;
-    --color-door-700: #174a80;
-    --color-door-800: #123c69;
-    --color-door-900: #0d2c4f;
+    --color-accent-50: #eef4fb;
+    --color-accent-100: #d6e4f4;
+    --color-accent-200: #a9c6e6;
+    --color-accent-500: #3b7bbd;
+    --color-accent-600: #1f5a99;
+    --color-accent-700: #174a80;
+    --color-accent-800: #123c69;
+    --color-accent-900: #0d2c4f;
 
     --color-wash: #faf8f3;
     --color-wash-dark: #f1ede4;
@@ -46,70 +42,129 @@
     --color-gold-500: #c99a2e;
 
     --color-olive-100: #e6ebd3;
+    --color-olive-200: #cdd8a6;
     --color-olive-700: #4c5e22;
 
-    --color-ink: #1c2a38;
-}
-
-/* Visible keyboard focus everywhere (WCAG 2.4.7 / 2.4.11). */
-:focus-visible {
-    outline: 3px solid var(--color-door-600);
-    outline-offset: 2px;
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
-    body { background-color: var(--color-wash); }
-    body { font-family: var(--font-sans); }
-    h1, h2, h3 { font-family: var(--font-display); }
-    h1, h2 { letter-spacing: -0.01em; line-height: 1.2; }
-    [lang="ar"] h1, [lang="ar"] h2, html[dir="rtl"] h1, html[dir="rtl"] h2 { letter-spacing: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body { @apply bg-wash text-zinc-900 antialiased; font-family: var(--font-sans); }
+    h1, h2, h3 { @apply font-semibold tracking-tight text-zinc-900; }
+    [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 { letter-spacing: 0; }
+    ::selection { background: var(--color-accent-200); }
+    :focus-visible { outline: 2px solid var(--color-accent-600); outline-offset: 2px; border-radius: 6px; }
+    a { @apply text-accent-700; }
 }
 
 @layer components {
-    .btn { @apply inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition; }
-    .btn-primary { @apply bg-door-700 text-white shadow-sm hover:bg-door-800; }
-    .btn-accent { @apply bg-clay-700 text-white shadow-sm hover:bg-clay-700/90; }
-    .btn-secondary { @apply border border-door-200 bg-white text-door-800 hover:bg-door-50; }
-    .btn-danger { @apply bg-red-700 text-white hover:bg-red-800; }
-    .field { @apply mt-1 block min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-base text-ink; }
-    .label { @apply block text-sm font-medium text-ink; }
-    .card { @apply rounded-xl border border-door-100 bg-white p-5 shadow-sm; }
+    /* Buttons */
+    .btn { @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium no-underline transition duration-150 select-none; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { @apply bg-accent-600 text-white shadow-sm hover:bg-accent-700; }
+    .btn-primary:where(a) { color: #fff; }
+    .btn-dark { @apply bg-accent-900 text-white hover:bg-accent-800; }
+    .btn-dark:where(a) { color: #fff; }
+    .btn-secondary { @apply border border-accent-200 bg-white text-accent-800 hover:bg-accent-50; }
+    .btn-secondary:where(a) { @apply text-accent-800; }
+    .btn-danger { @apply bg-red-600 text-white hover:bg-red-700; }
+    .btn-lg { @apply h-12 px-6 text-base; }
+
+    /* Forms */
+    .field { @apply mt-1 block h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 shadow-sm transition placeholder:text-zinc-400 hover:border-zinc-400; }
+    textarea.field { @apply h-auto py-2; }
+    select.field { @apply pe-8; }
+    .field:focus { @apply border-accent-600 outline-none ring-2 ring-accent-600/25; }
+    .field[aria-invalid="true"] { @apply border-red-500; }
+    .label { @apply block text-sm font-medium text-zinc-900; }
+    .hint { @apply mt-1 text-sm text-zinc-600; }
     .error-text { @apply mt-1 text-sm text-red-700; }
-    .badge { @apply inline-block rounded-full bg-clay-100 px-2.5 py-0.5 text-xs font-medium text-clay-700; }
-    .badge-verified { @apply inline-flex items-center gap-1 rounded-full bg-olive-100 px-2.5 py-0.5 text-xs font-semibold text-olive-700; }
-    a:not(.btn) { @apply text-door-700; }
+    .check { @apply flex min-h-10 items-center gap-2 text-sm; }
+    .check input { @apply h-4 w-4 rounded border-zinc-400 accent-accent-600; }
+
+    /* Surfaces */
+    .card { @apply rounded-xl border border-accent-100 bg-white p-5; }
+    .card-link { @apply block rounded-xl border border-zinc-200 bg-white p-5 no-underline transition duration-200 hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md; }
+    .panel { @apply rounded-xl border border-accent-100 bg-white; }
+    .section-title { @apply text-2xl md:text-3xl; }
+    .eyebrow { @apply text-xs font-semibold uppercase tracking-wider text-clay-700; }
+
+    /* Badges */
+    .badge { @apply inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700; }
+    .badge-accent { @apply inline-flex items-center rounded-full bg-accent-50 px-2.5 py-0.5 text-xs font-medium text-accent-700 ring-1 ring-inset ring-accent-200; }
+    .badge-verified { @apply inline-flex items-center gap-1 rounded-full bg-olive-100 px-2.5 py-0.5 text-xs font-medium text-olive-700 ring-1 ring-inset ring-olive-200; }
+    .badge-clay { @apply inline-flex items-center rounded-full bg-clay-100 px-2.5 py-0.5 text-xs font-semibold text-clay-700; }
+
+    /* Tables */
+    table { @apply text-sm; }
+    thead th { @apply text-xs font-medium uppercase tracking-wide text-zinc-600; }
+    tbody tr { @apply transition-colors hover:bg-zinc-50; }
+
+    /* Accordion */
+    .faq details { @apply border-b border-zinc-200; }
+    .faq summary { @apply flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 font-medium; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: ""; width: 0.55rem; height: 0.55rem; border-inline-end: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 0.2s var(--ease-out-soft); flex-shrink: 0; }
+    .faq details[open] summary::after { transform: rotate(-135deg); }
+    .faq details > p { @apply pb-4 text-zinc-600; }
 }
 
-/* A thin band of white and blue "zellige" diamonds with gold studs under the header. */
-.zellige {
-    height: 10px;
-    background:
-        radial-gradient(circle at 10px 5px, var(--color-gold-400) 1.6px, transparent 2px) 0 0 / 20px 10px,
-        linear-gradient(135deg, var(--color-door-700) 25%, transparent 25%) -5px 0 / 10px 10px,
-        linear-gradient(225deg, var(--color-door-700) 25%, transparent 25%) -5px 0 / 10px 10px,
-        linear-gradient(315deg, var(--color-door-700) 25%, transparent 25%) 0 0 / 10px 10px,
-        linear-gradient(45deg, var(--color-door-700) 25%, var(--color-door-100) 25%) 0 0 / 10px 10px;
+/* ---------- Motion ---------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* On load: hero and results rise in, one after another. Delays live in CSS because the CSP forbids style attributes. */
+.rise { animation: fade-up 0.6s var(--ease-out-soft) both; }
+.rise-2 { animation-delay: 0.08s; }
+.rise-3 { animation-delay: 0.16s; }
+.rise-4 { animation-delay: 0.24s; }
+.stagger > * { animation: fade-up 0.5s var(--ease-out-soft) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.stagger > *:nth-child(n + 7) { animation-delay: 0.3s; }
+.menu-open { animation: pop 0.18s var(--ease-out-soft) both; }
+[role="status"], [role="alert"] { animation: fade-up 0.35s var(--ease-out-soft) both; }
+
+/* Scroll-driven reveal where the browser supports it; everywhere else the content is simply visible. */
+@supports (animation-timeline: view()) {
+    @keyframes reveal { from { opacity: 0.12; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    [data-reveal] { animation: reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+    @media print { [data-reveal] { animation: none; } }
 }
 
-/* Moorish arch frame used on the home page hero. */
-.arch {
-    border-radius: 9999px 9999px 0.75rem 0.75rem;
-    background: linear-gradient(180deg, var(--color-door-700), var(--color-door-900));
+/* Soft dotted grid behind the hero (CSS only). */
+.dot-grid {
+    background-image: radial-gradient(circle, rgb(24 24 27 / 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, #000 40%, transparent);
 }
 
-/* Faint eight-point-star tiling (a classic zellige motif) for empty states and section backgrounds.
-   Inline SVG, no external image; the CSP allows data: images. */
-.tile-bg {
-    background-color: var(--color-wash-dark);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23174a80' stroke-opacity='.13' stroke-width='1.2'%3E%3Cpath d='M24 4l5.5 11.5L42 15l-8 9.5L42 33l-12.5-.5L24 44l-5.5-11.5L6 33l8-8.5L6 15l12.5.5z'/%3E%3C/g%3E%3C/svg%3E");
+/* Slow marquee of city names; it pauses on hover and stops entirely for reduced motion. */
+@keyframes slide { to { transform: translateX(-50%); } }
+.marquee-track { animation: slide 38s linear infinite; width: max-content; }
+[dir="rtl"] .marquee-track { animation-direction: reverse; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    /* Scroll-driven animations ignore durations, so switch the reveal off completely. */
+    [data-reveal] { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .marquee-track { animation: none !important; }
 }
 
-.tile-bg-blue {
-    background-color: var(--color-door-800);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.10' stroke-width='1.2'%3E%3Cpath d='M24 4l5.5 11.5L42 15l-8 9.5L42 33l-12.5-.5L24 44l-5.5-11.5L6 33l8-8.5L6 15l12.5.5z'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .lift { transition: transform .2s ease, box-shadow .2s ease; }
-    .lift:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(13 44 79 / .12); }
-}
+/* Dashboard bars and progress grow in when they scroll into view or load. */
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.grow-y { transform-origin: bottom; animation: grow-y 0.7s var(--ease-out-soft) both; }
+li:nth-child(2) > .grow-y { animation-delay: 0.05s; }
+li:nth-child(3) > .grow-y { animation-delay: 0.1s; }
+li:nth-child(4) > .grow-y { animation-delay: 0.15s; }
+li:nth-child(5) > .grow-y { animation-delay: 0.2s; }
+li:nth-child(6) > .grow-y { animation-delay: 0.25s; }
+.grow-x { transform-origin: left; animation: grow-x 0.9s var(--ease-out-soft) both; }
+[dir="rtl"] .grow-x { transform-origin: right; }

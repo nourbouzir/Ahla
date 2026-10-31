@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('admin::messages.audit')">
+<x-dash area="admin" :title="__('admin::messages.audit')" :heading="false">
     <h1 class="text-2xl font-bold">{{ __('admin::messages.audit') }}</h1>
     <div class="mt-4 overflow-x-auto">
         <table class="w-full">
@@ -22,4 +22,4 @@
         </table>
     </div>
     {{ $logs->links() }}
-</x-layouts.app>
+</x-dash>

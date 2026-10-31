@@ -57,6 +57,7 @@ class User extends Authenticatable implements HasLocalePreference
             'role' => Role::class,
             'email_notifications' => 'boolean',
             'share_phone' => 'boolean',
+            'disabled_at' => 'datetime',
         ];
     }
 
