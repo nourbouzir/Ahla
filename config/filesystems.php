@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Never serve the private disk (ID evidence lives there); nothing uses temporary URLs.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

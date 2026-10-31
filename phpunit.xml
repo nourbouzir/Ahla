@@ -22,6 +22,7 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="AHLA_ALTERNATIVE_HOST_FINDER" value="App\Contracts\Fakes\FakeAlternativeHostFinder"/>
+        <env name="AHLA_TRANSLATOR" value="App\Contracts\Fakes\NullTranslator"/>
         <env name="AHLA_PAYMENT_GATEWAY" value="App\Contracts\Fakes\FakePaymentGateway"/>
         <env name="AHLA_HOST_ELIGIBILITY" value="App\Contracts\Fakes\FakeHostEligibility"/>
         <env name="AHLA_AVAILABILITY_CHECKER" value="App\Contracts\Fakes\FakeAvailabilityChecker"/>

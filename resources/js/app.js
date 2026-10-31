@@ -10,3 +10,4 @@ if (toggle && menu) {
         toggle.setAttribute('aria-expanded', String(open));
     });
 }
+import './chat';

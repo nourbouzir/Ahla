@@ -36,7 +36,9 @@
             @endif
         </dl>
 
-        @error('booking')<p class="error-text" role="alert">{{ $message }}</p>@enderror
+        @can('chat', $booking)
+            <p class="mt-4"><a class="btn btn-secondary" href="{{ route('messages.show', $booking) }}">{{ __('messaging::messages.open') }}</a></p>
+        @endcan
 
         @if ($booking->status->value === 'confirmed' && ! auth()->user()->can('admin.audit'))
             <form method="POST" action="{{ route('bookings.cancel', $booking) }}" class="mt-6">

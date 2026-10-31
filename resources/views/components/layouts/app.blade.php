@@ -32,6 +32,8 @@
                     @if ($role === 'admin' && Route::has('admin.verifications.index'))
                         <a class="py-2" href="{{ route('admin.verifications.index') }}">{{ __('common.nav.admin') }}</a>
                     @endif
+                    @php($unread = auth()->user()->unreadNotifications()->count())
+                    <a class="py-2" href="{{ route('notifications.index') }}">{{ __('notification::messages.title') }}@if ($unread > 0) <span class="badge" aria-label="{{ $unread }} {{ __('notification::messages.new') }}">{{ $unread }}</span>@endif</a>
                     <a class="py-2" href="{{ route('profile.edit') }}">{{ __('common.nav.profile') }}</a>
                     <form method="POST" action="{{ route('logout') }}">@csrf
                         <button class="py-2 text-start underline" type="submit">{{ __('common.nav.logout') }}</button>
