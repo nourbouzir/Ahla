@@ -17,6 +17,8 @@ Closes #___  <!-- or "none" -->
 - [ ] Added an ADR in `docs/decisions/` if I made a notable decision
 - [ ] No secrets committed (checked for `.env`, keys, tokens)
 - [ ] CI is green
+- [ ] Screens I touched: keyboard only works, visible focus, labels on every field, text contrast 4.5:1, checked in EN, FR and AR (right-to-left) at 360 px wide
+- [ ] New text lives in `lang/{en,fr,ar}` for all three languages (the parity test fails otherwise)
 
 ## How did you test it?
 

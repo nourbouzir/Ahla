@@ -11,6 +11,10 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 - The browser-only social discovery demo (mock locals, chat and map): it used fake data and Candidate-style features outside the plan. Real search replaces it in Phase 3.
 
 ### Added
+- Phase 4: in-app messaging per booking with translation (ADR 0006) and a chat page, in-app and e-mail notifications for booking, payment, cancellation, refund and message events, language-parity and route-access tests in CI, security headers and HTTPS/cookie hardening (#30-#35).
+
+### Fixed
+- The private disk is no longer served over HTTP (`serve` was on by default).
 - Phase 3: host search with filters and pagination (`GET /api/search`, `/search`), weighted recommendation with human-readable reasons, host profile pages, the real alternative-host finder, cancellation that survives refund failures, and lifecycle jobs (expire, auto-complete, reconcile payments, purge ID documents) (#23-#29).
 - Phase 2: host verification (encrypted ID upload, admin review with video call, suspend/reinstate), host state machine and Verified-only guard, experiences and weekly availability management, booking request/accept/decline/cancel with payment capture, overlap and 2-per-day rules under a row lock, booking screens for tourists and hosts, MySQL concurrency tests in CI (#15-#22).
 - Phase 1: base layout with EN/FR/AR and right-to-left (Tailwind), registration, login, logout and password reset (rate limited), role/action matrix as Gate abilities, tourist and host profiles with private phone and email, payment engine (sandbox gateway, `PaymentService`, refund policies, signed webhook), `AuditLogger` and ADR 0005 (#7-#14).

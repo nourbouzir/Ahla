@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
 
@@ -37,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // HTTPS only in production: every generated link is https and cookies are never sent over http.
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
+            config(['session.secure' => true, 'session.same_site' => 'lax', 'session.http_only' => true]);
+        }
     }
 }

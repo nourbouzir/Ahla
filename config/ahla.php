@@ -1,6 +1,5 @@
 <?php
 
-use App\Contracts\Fakes\NullTranslator;
 use App\Contracts\Hosts\AlternativeHostFinder;
 use App\Contracts\Hosts\AvailabilityChecker;
 use App\Contracts\Hosts\HostEligibility;
@@ -8,6 +7,7 @@ use App\Contracts\Payments\PaymentGateway;
 use App\Contracts\Translation\Translator;
 use App\Modules\Experience\Services\WeeklyAvailabilityChecker;
 use App\Modules\Matching\Services\MatchingAlternativeHostFinder;
+use App\Modules\Messaging\Services\LibreTranslateTranslator;
 use App\Modules\Payment\Gateways\SandboxPaymentGateway;
 use App\Modules\Verification\Services\VerifiedHostEligibility;
 
@@ -44,6 +44,12 @@ return [
         'proximity_km' => 15,
         'per_page' => 12,
     ],
+    'translation' => [
+        // LibreTranslate-compatible service (ADR 0006). Empty URL = translation off, originals are shown.
+        'url' => env('AHLA_TRANSLATE_URL', ''),
+        'api_key' => env('AHLA_TRANSLATE_API_KEY', ''),
+        'timeout' => 5,
+    ],
     'evidence_retention_days' => (int) env('AHLA_EVIDENCE_RETENTION_DAYS', 90),
     'request_ttl_hours' => 12,
     'alternatives_max' => 3,
@@ -59,10 +65,7 @@ return [
             'AHLA_PAYMENT_GATEWAY',
             SandboxPaymentGateway::class, // ADR 0005: v1 runs on the sandbox gateway
         ),
-        Translator::class => env(
-            'AHLA_TRANSLATOR',
-            env('APP_ENV') === 'production' ? '' : NullTranslator::class,
-        ),
+        Translator::class => env('AHLA_TRANSLATOR', LibreTranslateTranslator::class),
         HostEligibility::class => env('AHLA_HOST_ELIGIBILITY', VerifiedHostEligibility::class),
         AvailabilityChecker::class => env('AHLA_AVAILABILITY_CHECKER', WeeklyAvailabilityChecker::class),
         AlternativeHostFinder::class => env('AHLA_ALTERNATIVE_HOST_FINDER', MatchingAlternativeHostFinder::class),
