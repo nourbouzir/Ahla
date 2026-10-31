@@ -1,4 +1,3 @@
-import './bootstrap';
 import './chat';
 
 // Mobile menu: opens with a short pop animation. Everything else works without JavaScript.

@@ -171,11 +171,6 @@ class AdminStats
         ];
     }
 
-    public function revenueFor(string $volume): string
-    {
-        return $this->revenueOf($volume);
-    }
-
     /**
      * One row per guide with the numbers that show how they are doing.
      *

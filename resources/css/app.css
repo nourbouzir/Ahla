@@ -94,7 +94,6 @@
     .badge { @apply inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700; }
     .badge-accent { @apply inline-flex items-center rounded-full bg-accent-50 px-2.5 py-0.5 text-xs font-medium text-accent-700 ring-1 ring-inset ring-accent-200; }
     .badge-verified { @apply inline-flex items-center gap-1 rounded-full bg-olive-100 px-2.5 py-0.5 text-xs font-medium text-olive-700 ring-1 ring-inset ring-olive-200; }
-    .badge-clay { @apply inline-flex items-center rounded-full bg-clay-100 px-2.5 py-0.5 text-xs font-semibold text-clay-700; }
 
     /* Tables */
     table { @apply text-sm; }

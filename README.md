@@ -141,6 +141,7 @@ phpunit.xml
 public
 public/.htaccess
 public/favicon.ico
+public/favicon.svg
 public/images
 public/index.php
 public/robots.txt
