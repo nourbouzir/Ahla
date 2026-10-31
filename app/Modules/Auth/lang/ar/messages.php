@@ -30,6 +30,7 @@ return [
     'profile_title' => 'ملفك الشخصي',
     'profile_saved' => 'تم حفظ الملف الشخصي.',
     'phone' => 'الهاتف',
+    'avatar' => 'صورة الملف الشخصي', 'avatar_hint' => 'JPG أو PNG أو WebP حتى 2 ميغابايت. سيتم قصها بشكل مربع.', 'avatar_remove' => 'حذف صورتي', 'avatar_invalid' => 'تعذّر استخدام هذه الصورة. جرّب صورة JPG أو PNG أو WebP.',
     'share_phone' => 'شارك رقم هاتفي مع الطرف الآخر بعد تأكيد الحجز',
     'phone_hint' => 'خاص. يظهر للطرف الآخر فقط بعد تأكيد الحجز.',
     'preferred_language' => 'لغة الواجهة',

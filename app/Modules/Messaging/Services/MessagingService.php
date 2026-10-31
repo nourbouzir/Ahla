@@ -77,7 +77,7 @@ class MessagingService
      */
     public function conversation(Booking $booking, User $viewer, int $afterId = 0): Collection
     {
-        $messages = Message::query()->with('sender:id,name')
+        $messages = Message::query()->with('sender:id,name,avatar_path')
             ->where('booking_id', $booking->id)->where('id', '>', $afterId)
             ->orderBy('id')->get();
 
@@ -100,6 +100,8 @@ class MessagingService
             'id' => $message->id,
             'mine' => ! $incoming,
             'sender' => $message->sender->name,
+            'avatar' => $message->sender->avatarUrl(),
+            'initials' => $message->sender->initials(),
             'text' => $translated ? $message->translated_text : $message->original_text,
             'original' => $translated ? $message->original_text : null,
             'language' => $message->language,

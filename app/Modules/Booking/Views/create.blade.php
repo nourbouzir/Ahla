@@ -17,7 +17,7 @@
         @endif
         @error('booking')<p class="error-text" role="alert">{{ $message }}</p>@enderror
 
-        <p class="mt-4 rounded bg-slate-100 p-3 text-sm">{{ __('booking::messages.payment_note') }}</p>
+        <p class="mt-4 rounded bg-door-50 p-3 text-sm">{{ __('booking::messages.payment_note') }}</p>
         <button class="btn btn-primary mt-4" type="submit">{{ __('booking::messages.send_request') }}</button>
     </form>
 </x-layouts.app>

@@ -7,7 +7,7 @@
 
         <dl class="mt-4 space-y-2">
             <div><dt class="label">{{ $viewerIsHost ? __('booking::messages.tourist') : __('booking::messages.host') }}</dt>
-                <dd>{{ ($viewerIsHost ? null : $booking->host->hostProfile?->display_name) ?? $other->name }}</dd></div>
+                <dd class="flex items-center gap-2"><x-avatar :user="$other" :name="$viewerIsHost ? null : $booking->host->hostProfile?->display_name" size="h-8 w-8 text-xs" />{{ ($viewerIsHost ? null : $booking->host->hostProfile?->display_name) ?? $other->name }}</dd></div>
             <div><dt class="label">{{ __('booking::messages.when') }}</dt>
                 <dd>{{ $booking->date->format('Y-m-d') }} {{ substr($booking->start_time, 0, 5) }}-{{ substr($booking->end_time, 0, 5) }}</dd></div>
             <div><dt class="label">{{ __('booking::messages.group') }}</dt><dd>{{ $booking->group_size }}</dd></div>

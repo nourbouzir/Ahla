@@ -30,6 +30,7 @@ return [
     'profile_title' => 'Votre profil',
     'profile_saved' => 'Profil enregistré.',
     'phone' => 'Téléphone',
+    'avatar' => 'Photo de profil', 'avatar_hint' => 'JPG, PNG ou WebP, 2 Mo maximum. Elle est recadrée en carré.', 'avatar_remove' => 'Supprimer ma photo', 'avatar_invalid' => 'Cette image n’a pas pu être utilisée. Essayez une photo JPG, PNG ou WebP.',
     'share_phone' => 'Partager mon numéro de téléphone avec l’autre personne une fois la réservation confirmée',
     'phone_hint' => 'Privé. Montré à l’autre personne seulement après la confirmation d’une réservation.',
     'preferred_language' => 'Langue de l’interface',

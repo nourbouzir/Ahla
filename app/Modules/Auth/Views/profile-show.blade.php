@@ -1,6 +1,6 @@
 <x-layouts.app :title="$user->hostProfile?->display_name ?? $user->name">
     <article class="card mx-auto max-w-xl">
-        <h1 class="text-2xl font-bold">{{ $user->hostProfile?->display_name ?? $user->name }}</h1>
+        <h1 class="flex items-center gap-4 text-3xl font-bold text-door-900"><x-avatar :user="$user" :name="$user->hostProfile?->display_name" size="h-20 w-20 text-2xl" />{{ $user->hostProfile?->display_name ?? $user->name }}</h1>
         @if ($user->hostProfile)
             <p class="text-slate-600">{{ $user->hostProfile->city }}</p>
             <p class="mt-3">{{ $user->hostProfile->bio }}</p>

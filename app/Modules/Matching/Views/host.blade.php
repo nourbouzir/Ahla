@@ -1,8 +1,8 @@
 <x-layouts.app :title="$host->display_name">
     <article class="mx-auto max-w-2xl">
         <div class="flex items-start justify-between gap-2">
-            <h1 class="text-2xl font-bold">{{ $host->display_name }}</h1>
-            <span class="badge">{{ __('auth::messages.status.verified') }}</span>
+            <h1 class="flex items-center gap-4 text-3xl font-bold text-door-900"><x-avatar :user="$host->user" :name="$host->display_name" size="h-20 w-20 text-2xl" />{{ $host->display_name }}</h1>
+            <span class="badge-verified"><svg viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>{{ __('auth::messages.status.verified') }}</span>
         </div>
         <p class="text-slate-600">{{ $host->city }}@if ($host->rating_avg !== null) - {{ number_format((float) $host->rating_avg, 1) }} / 5 @endif</p>
         <p class="mt-3">{{ $host->bio }}</p>
