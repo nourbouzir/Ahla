@@ -16,5 +16,8 @@ interface PaymentGateway
         string $idempotencyKey,
     ): PaymentGatewayResponse;
 
+    /** Cancel an authorisation that was never captured (request declined or expired). */
+    public function release(string $gatewayReference, string $idempotencyKey): PaymentGatewayResponse;
+
     public function status(string $gatewayReference): PaymentStatus;
 }

@@ -10,19 +10,19 @@ use InvalidArgumentException;
 
 class FakePaymentGateway implements PaymentGateway
 {
-    private FakeGatewayMode $mode = FakeGatewayMode::Success;
+    protected FakeGatewayMode $mode = FakeGatewayMode::Success;
 
     /** @var array<string, PaymentGatewayResponse> */
-    private array $responses = [];
+    protected array $responses = [];
 
     /** @var array<string, PaymentStatus> */
-    private array $statuses = [];
+    protected array $statuses = [];
 
     /** @var array<string, string> */
-    private array $amounts = [];
+    protected array $amounts = [];
 
     /** @var array<string, string> */
-    private array $currencies = [];
+    protected array $currencies = [];
 
     public function setMode(FakeGatewayMode $mode): void
     {
@@ -89,6 +89,39 @@ class FakePaymentGateway implements PaymentGateway
                 $gatewayReference,
             );
         });
+    }
+
+    public function release(string $gatewayReference, string $idempotencyKey): PaymentGatewayResponse
+    {
+        return $this->remember('release', $idempotencyKey, function () use ($gatewayReference) {
+            $this->throwIfTimedOut();
+            $this->assertStatus($gatewayReference, PaymentStatus::Authorised);
+            $this->statuses[$gatewayReference] = PaymentStatus::Released;
+
+            return new PaymentGatewayResponse(
+                PaymentStatus::Released,
+                $this->amounts[$gatewayReference],
+                $this->currencies[$gatewayReference],
+                $gatewayReference,
+            );
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function exportState(): array
+    {
+        return ['mode' => $this->mode, 'responses' => $this->responses, 'statuses' => $this->statuses,
+            'amounts' => $this->amounts, 'currencies' => $this->currencies];
+    }
+
+    /** @param array<string, mixed> $state */
+    public function importState(array $state): void
+    {
+        $this->mode = $state['mode'];
+        $this->responses = $state['responses'];
+        $this->statuses = $state['statuses'];
+        $this->amounts = $state['amounts'];
+        $this->currencies = $state['currencies'];
     }
 
     public function status(string $gatewayReference): PaymentStatus

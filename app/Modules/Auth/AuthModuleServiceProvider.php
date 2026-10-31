@@ -2,11 +2,20 @@
 
 namespace App\Modules\Auth;
 
+use App\Models\User;
+use App\Modules\Auth\Support\Permissions;
 use App\Modules\ModuleServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthModuleServiceProvider extends ModuleServiceProvider
 {
-    // Routes, migrations, views and translations are loaded from this folder by
-    // the base class. Module-only bindings go in register(); listeners and
-    // policies go in boot() (call parent::boot() first).
+    public function boot(): void
+    {
+        parent::boot();
+
+        // One Gate ability per row of the role/action matrix.
+        foreach (array_keys(Permissions::MATRIX) as $ability) {
+            Gate::define($ability, fn (User $user) => Permissions::allows($user->role, $ability));
+        }
+    }
 }

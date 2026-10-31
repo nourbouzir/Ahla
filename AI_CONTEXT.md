@@ -35,7 +35,7 @@ Link to your design docs so the assistant can go deeper:
 | Maps        | OpenStreetMap + Leaflet in the browser                                |
 | Deploy      | One Linux VPS: Nginx + PHP-FPM 8.3, MySQL 8, supervised queue worker, cron running `schedule:run` every minute. Dev: Laravel Sail or XAMPP |
 
-> The Payment Gateway provider is **not chosen yet** (open issue, ADR 0005; must support authorise / capture / refund). Code against the `PaymentGateway` interface only.
+> The payment provider is decided in [ADR 0005](docs/decisions/0005-payment-provider.md): v1 runs on `SandboxPaymentGateway`; the first real adapter is ClicToPay. Code against the `PaymentGateway` interface only (authorise, capture, release, refund).
 
 ## 3. Project structure
 
