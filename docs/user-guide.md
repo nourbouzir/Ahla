@@ -4,7 +4,7 @@ A step-by-step guide for the three kinds of people who use the app. Everything b
 
 ## 0. Open the app and pick an account
 
-1. Start it: `php artisan serve` (open **http://127.0.0.1:8000**, or the port you chose, for example `--port=8099`).
+1. Start it: `php artisan serve` (open **http://localhost:8000**, or the port you chose, for example `--port=8099`).
 2. Open the **Log in** page. In development it shows a **Demo accounts** panel: one click on **Log in** next to an account signs you in. All demo accounts use the password `password`.
 3. **Switching accounts** needs no logging out. The Log in and Sign up pages stay open while you are signed in; they say who is signed in, and logging in as someone else simply replaces them. One browser holds one person at a time, so to watch two people at once (for example a tourist and a guide chatting) use a normal window and a private/incognito window.
 4. **Creating a new account** works any time: **Sign up**, choose *tourist* or *guide*, pick a password of at least 8 characters. Use any e-mail address (no confirmation e-mail is required).

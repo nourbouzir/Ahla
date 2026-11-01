@@ -48,7 +48,7 @@ php artisan migrate --seed      # builds the database and fills it with demo dat
 php artisan storage:link
 npm run build                   # compiles the design
 
-php artisan serve               # open http://127.0.0.1:8000
+php artisan serve               # open http://localhost:8000
 ```
 
 Create an empty MySQL database first (the name you put in `DB_DATABASE`). Prefer not to install MySQL? The automated tests run on SQLite and need none: `composer test`.
