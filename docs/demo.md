@@ -4,7 +4,7 @@
 
 ```bash
 php artisan migrate:fresh --seed        # demo data (never in production)
-npm run build && php artisan serve      # http://localhost:8000
+npm run build && php artisan serve      # http://127.0.0.1:8000
 php artisan queue:work                  # optional: sends the queued e-mails and translations
 ```
 

@@ -6,7 +6,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-const BASE = __ENV.BASE_URL || 'http://localhost:8000';
+const BASE = __ENV.BASE_URL || 'http://127.0.0.1:8000';
 const VUS = Number(__ENV.VUS || 20);
 
 export const options = {

@@ -17,7 +17,7 @@ A web platform where visitors to Tunisia spend a few hours with verified local h
 
 ## Contents
 
-[What is Ahla?](#what-is-ahla) · [Try it in 5 minutes](#try-it-in-5-minutes) · [Demo accounts](#demo-accounts) · [What you can do](#what-you-can-do) · [How a booking works](#how-a-booking-works) · [Everyday commands](#everyday-commands) · [Built with](#built-with) · [Project structure](#project-structure) · [Documentation](#documentation) · [Working together](#working-together)
+[What is Ahla?](#what-is-ahla) · [Try it in 5 minutes](#try-it-in-5-minutes) · [Demo video](#demo-video) · [Demo accounts](#demo-accounts) · [What you can do](#what-you-can-do) · [How a booking works](#how-a-booking-works) · [Everyday commands](#everyday-commands) · [Built with](#built-with) · [Project structure](#project-structure) · [Documentation](#documentation) · [Working together](#working-together)
 
 ## What is Ahla?
 
@@ -48,12 +48,16 @@ php artisan migrate --seed      # builds the database and fills it with demo dat
 php artisan storage:link
 npm run build                   # compiles the design
 
-php artisan serve               # open http://localhost:8000
+php artisan serve               # open http://127.0.0.1:8000
 ```
 
 Create an empty MySQL database first (the name you put in `DB_DATABASE`). Prefer not to install MySQL? The automated tests run on SQLite and need none: `composer test`.
 
 > **Already cloned an older version?** Update it with `git pull`, `composer install`, `npm ci`, `npm run build`, then `php artisan migrate:fresh --seed`. The last command rebuilds the demo database from scratch.
+
+## Demo video
+
+A two-minute narrated tour for tourists and guides: **[docs/demo/ahla-demo.mp4](https://github.com/nourbouzir/Ahla/blob/main/docs/demo/ahla-demo.mp4)** (opens in the browser, no login needed).
 
 ## Demo accounts
 

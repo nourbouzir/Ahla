@@ -37,7 +37,7 @@ php artisan key:generate
 php artisan migrate --seed
 
 # 6. Run
-php artisan serve          # http://localhost:8000
+php artisan serve          # http://127.0.0.1:8000
 php artisan queue:work     # second terminal: emails, expiry, notifications
 npm run dev                # third terminal: front-end assets (if you change CSS/JS)
 php artisan schedule:work  # runs the scheduled jobs locally (ExpireRequests, ...)

@@ -3,7 +3,7 @@
 // Small load generator used for docs/performance.md (the k6 scripts in tests/load/ do the same job
 // where k6 is installed). Plain PHP + curl, so it runs anywhere the app does.
 //
-//   php scripts/loadcheck.php http://localhost:8000 20 200 / /search?city=Tunis "/api/search?language=fr"
+//   php scripts/loadcheck.php http://127.0.0.1:8000 20 200 / /search?city=Tunis "/api/search?language=fr"
 //
 // args: base-url, concurrency, requests per path, then one or more paths.
 // Prints requests, errors, p50, p95, max (milliseconds) and requests per second for each path.
