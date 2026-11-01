@@ -7,6 +7,9 @@ Categories: **Added**, **Changed**, **Fixed**, **Removed**.
 
 ## [Unreleased]
 
+### Fixed
+- SRS/SDD review: refund policy now shown on the booking form (SDD 6.2); idle session timeout back to 30 minutes (ADR 0004); chat shows a calm "Translation unavailable" note when no translation service is set up (NFR-20); the activity log no longer stores typed e-mails or IPs of successful logins (NFR-12) and audit rows are append-only (NFR-19). ADR 0008 records the approved admin and guide tools (FR-24).
+
 ### Added
 - Docs: `docs/user-guide.md` (how to use Ahla as tourist, guide and admin, with troubleshooting). Every account action (sign-up, login, logout, failed login, profile, experience and availability changes, messages sent) now appears in the admin timeline, with readable sentences and filters.
 

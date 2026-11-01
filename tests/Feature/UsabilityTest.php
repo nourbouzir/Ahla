@@ -94,6 +94,33 @@ class UsabilityTest extends TestCase
         $this->assertSame(User::where('email', 'tim@test.dev')->value('id'), $failed[0]->entity_id, 'a failed attempt on a real account points at it');
         $this->assertSame(0, $failed[1]->entity_id, 'an unknown e-mail is still recorded');
         $this->assertStringNotContainsString('wrong-password', json_encode(AuditLog::all()), 'passwords are never logged');
+        $this->assertStringNotContainsString('ghost@test.dev', json_encode(AuditLog::all()), 'NFR-12: a typed e-mail is not stored');
+        $this->assertNull(AuditLog::where('new_status', 'logged_in')->first()->reason, 'NFR-12: successful logins store no IP');
+    }
+
+    public function test_the_refund_policy_is_shown_before_the_tourist_requests_a_booking(): void
+    {
+        $host = $this->makeHost('Policy Guide');
+        $experience = $host->hostProfile->experiences()->first();
+
+        $this->actingAs(User::factory()->tourist()->create())->get("/experiences/{$experience->id}/book")
+            ->assertOk()->assertSee('48 h or more before the start', false)->assertSee('50% refund', false);
+    }
+
+    public function test_audit_rows_are_append_only(): void
+    {
+        $row = AuditLog::factory()->create();
+
+        $this->expectException(\LogicException::class);
+        $row->update(['reason' => 'edited']);
+    }
+
+    public function test_audit_rows_cannot_be_deleted(): void
+    {
+        $row = AuditLog::factory()->create();
+
+        $this->expectException(\LogicException::class);
+        $row->delete();
     }
 
     public function test_profile_experience_and_availability_changes_are_logged(): void
@@ -136,7 +163,7 @@ class UsabilityTest extends TestCase
         $this->withSession(['locale' => 'fr'])->get('/admin/audit?entity=session')->assertSee('a créé un compte');
     }
 
-    public function test_without_a_translation_service_messages_are_shown_as_written_with_no_error_note(): void
+    public function test_without_a_translation_service_the_original_is_shown_with_a_clear_calm_status(): void
     {
         $this->app->singleton(Translator::class, LibreTranslateTranslator::class);
         config(['ahla.translation.url' => '']);
@@ -148,8 +175,8 @@ class UsabilityTest extends TestCase
 
         $this->assertNull(Message::first()->translated_language, 'nothing to translate with, so nothing is queued');
         $html = $this->actingAs($booking->host)->get("/bookings/{$booking->id}/messages")->assertOk()->assertSee('Bonjour !')->getContent();
-        // (The words also sit in data attributes for the live chat script; what must be absent is the note under the message.)
-        $this->assertDoesNotMatchRegularExpression('/<p class="mt-1 text-xs[^>]*>\s*Translat/', $html);
+        // NFR-20 / SDD 6.3: the reader is told, calmly, that the original is shown.
+        $this->assertMatchesRegularExpression('/<p class="mt-1 text-xs[^>]*>\s*Translation unavailable/', $html);
 
         // Once a service is configured the same pair is translated again.
         config(['ahla.translation.url' => 'https://translate.test']);

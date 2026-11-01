@@ -55,8 +55,8 @@ class ExpiredPageTest extends TestCase
         $this->assertStringNotContainsString('no-store', (string) $this->get('/search')->assertOk()->headers->get('Cache-Control'));
     }
 
-    public function test_sessions_last_two_hours_so_long_forms_do_not_expire_mid_typing(): void
+    public function test_idle_sessions_end_after_30_minutes_as_decided_in_adr_0004(): void
     {
-        $this->assertSame(120, (int) config('session.lifetime'));
+        $this->assertSame(30, (int) config('session.lifetime'));
     }
 }

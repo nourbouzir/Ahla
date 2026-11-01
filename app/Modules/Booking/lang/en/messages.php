@@ -4,6 +4,7 @@ return [
     'request_title' => 'Request a booking', 'per_person' => 'per person', 'date' => 'Date', 'start_time' => 'Start time',
     'group_size' => 'Number of people (max :max)', 'host_hours' => 'Host available', 'send_request' => 'Send request',
     'payment_note' => 'Your card is only reserved now. You are charged when the host accepts. If the host declines or does not answer within 12 hours, the reservation is released.',
+    'refund_policy' => 'If you cancel: full refund :full h or more before the start, :percent% refund from :partial to :full h before, no refund under :partial h. If the host cancels, you are always refunded in full.',
     'requested' => 'Request sent. The host has 12 hours to answer.',
     'accepted' => 'Booking confirmed and paid.', 'declined' => 'Request declined.',
     'cancelled' => 'Booking cancelled. Refunded: :amount TND.',
