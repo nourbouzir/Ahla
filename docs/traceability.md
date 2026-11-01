@@ -32,6 +32,8 @@ The acceptance journey `AcceptanceTest::test_at_main_journey_from_registration_t
 | NFR-11 | - | No card data stored | `SecurityTest::test_no_card_data_is_stored_anywhere` |
 | NFR-14 | - | No double booking under concurrency | `BookingConcurrencyTest::test_overlapping_requests_accepted_at_once_never_both_confirm` |
 | NFR-18 | - | English, French and Arabic | `LanguageParityTest::test_every_file_and_key_exists_in_all_three_languages` |
-| NFR-19 | - | Actor and timestamp for status changes | `PaymentEngineTest::test_authorise_then_capture_writes_status_and_audit`, `VerificationFlowTest::test_status_service_requires_reason_and_writes_audit` |
+| NFR-19 | - | Actor and timestamp for status changes (append-only) | `UsabilityTest::test_audit_rows_are_append_only`, `UsabilityTest::test_audit_rows_cannot_be_deleted`, `PaymentEngineTest::test_authorise_then_capture_writes_status_and_audit`, `VerificationFlowTest::test_status_service_requires_reason_and_writes_audit` |
+| NFR-12 | - | Collect and expose only needed personal data | `UsabilityTest::test_every_account_action_lands_in_the_admin_timeline`, `RbacAndProfileTest::test_contact_details_are_hidden_until_the_booking_is_confirmed` |
+| NFR-20 | - | Clear status when translation or payment is unavailable | `UsabilityTest::test_without_a_translation_service_the_original_is_shown_with_a_clear_calm_status`, `MessagingTest::test_translation_failure_never_blocks_or_loses_a_message` |
 
 Not covered by an automated test (see the setup report for why): NFR-01, NFR-03 and NFR-04 timings on a deployed system, NFR-15 backup targets (restore drill in `docs/runbook.md`), NFR-16 browsers, NFR-17 and NFR-21 legal review.

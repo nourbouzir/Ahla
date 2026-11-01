@@ -24,8 +24,8 @@ class MessagingService
     private const OPEN = [BookingStatus::Requested, BookingStatus::Confirmed, BookingStatus::Completed];
 
     /**
-     * Is a translation service actually set up? Without one (the default on a fresh install) messages
-     * are simply shown as written: no job is queued and no "translation unavailable" note appears.
+     * Is a translation service actually set up? Without one (the default on a fresh install) no job is
+     * queued and the reader gets a calm "translation unavailable, showing the original" status (NFR-20).
      */
     public function translationAvailable(): bool
     {
@@ -102,8 +102,10 @@ class MessagingService
     {
         $incoming = $message->sender_id !== $viewer->id;
         $translated = $incoming && $message->translated_text !== null && $message->translated_text !== $message->original_text;
-        $failed = $incoming && $message->translated_language !== null && $message->translated_text === null
-            && $message->created_at->lt(now()->subSeconds(30));
+        $noService = $incoming && $message->translated_language === null && $message->language !== $viewer->preferred_language
+            && ! $this->translationAvailable();
+        $failed = $noService || ($incoming && $message->translated_language !== null && $message->translated_text === null
+            && $message->created_at->lt(now()->subSeconds(30)));
         $pending = $incoming && $message->translated_language !== null && $message->translated_text === null && ! $failed;
 
         return [

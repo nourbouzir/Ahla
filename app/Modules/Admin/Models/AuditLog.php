@@ -33,6 +33,13 @@ class AuditLog extends Model
         return ['created_at' => 'datetime'];
     }
 
+    /** Append-only (NFR-19 tamper protection): rows are never edited or deleted through the application. */
+    protected static function booted(): void
+    {
+        static::updating(fn () => throw new \LogicException('audit_log rows are append-only.'));
+        static::deleting(fn () => throw new \LogicException('audit_log rows are append-only.'));
+    }
+
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');

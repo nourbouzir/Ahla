@@ -4,6 +4,7 @@ return [
     'request_title' => 'Demander une réservation', 'per_person' => 'par personne', 'date' => 'Date', 'start_time' => 'Heure de début',
     'group_size' => 'Nombre de personnes (max :max)', 'host_hours' => 'Hôte disponible', 'send_request' => 'Envoyer la demande',
     'payment_note' => 'Votre carte est seulement réservée maintenant. Vous êtes débité quand l’hôte accepte. Si l’hôte refuse ou ne répond pas sous 12 heures, la réservation est libérée.',
+    'refund_policy' => 'Si vous annulez : remboursement total à :full h ou plus avant le début, :percent % de :partial h à :full h avant, aucun remboursement sous :partial h. Si l’hôte annule, vous êtes toujours remboursé en totalité.',
     'requested' => 'Demande envoyée. L’hôte a 12 heures pour répondre.',
     'accepted' => 'Réservation confirmée et payée.', 'declined' => 'Demande refusée.',
     'cancelled' => 'Réservation annulée. Remboursé : :amount TND.',

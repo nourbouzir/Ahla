@@ -18,6 +18,7 @@
         @error('booking')<p class="error-text" role="alert">{{ $message }}</p>@enderror
 
         <p class="mt-4 rounded bg-door-50 p-3 text-sm">{{ __('booking::messages.payment_note') }}</p>
+        <p class="mt-2 rounded bg-door-50 p-3 text-sm" id="refund-policy">{{ __('booking::messages.refund_policy', ['full' => config('ahla.refunds.tourist.full_refund_hours'), 'partial' => config('ahla.refunds.tourist.partial_refund_hours'), 'percent' => config('ahla.refunds.tourist.partial_refund_percent')]) }}</p>
         <button class="btn btn-primary mt-4" type="submit">{{ __('booking::messages.send_request') }}</button>
     </form>
 </x-layouts.app>

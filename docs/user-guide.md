@@ -25,7 +25,7 @@ A step-by-step guide for the three kinds of people who use the app. Everything b
 4. Open a host, press **Request booking** under the experience you like. Choose a date, a start time inside the guide's weekly hours (listed on the page) and the number of people, then **Send request**.
 5. What happens next: your card is only **reserved**. The guide has **12 hours** to answer. If they accept, the payment is taken and the booking becomes *Confirmed*. If they decline or do not answer, the reservation is released and nothing is charged. (Payments use a sandbox: no real money moves.)
 6. **My bookings** (top menu) shows every booking with its status and payment. Open one to see the details. The guide's e-mail and phone appear only after the booking is *Confirmed*.
-7. **Chat**: on a booking, press **Open the chat**. Write and send. The guide's answer appears by itself within about five seconds, no reload needed. If a translation service is connected, messages are translated between English, French and Arabic and you can press **Show original**; without one, messages are shown as written.
+7. **Chat**: on a booking, press **Open the chat**. Write and send. The guide's answer appears by itself within about five seconds, no reload needed. If a translation service is connected, messages are translated between English, French and Arabic and you can press **Show original**; without one, each foreign-language message shows "Translation unavailable - showing the original".
 8. **Cancel**: on a confirmed booking press **Cancel this booking**. Refund rule: 100% if at least 48 hours before the start, 50% from 24 to 48 hours, nothing under 24 hours. If the *guide* cancels, you are always refunded in full, and if it is less than 24 hours before the start you also see other verified hosts in the same city.
 9. **Notifications** (top menu): a bell-style list of everything that happened to your bookings. You can switch e-mail copies off there.
 
@@ -68,10 +68,10 @@ A step-by-step guide for the three kinds of people who use the app. Everything b
 
 | You see | Do this |
 |---|---|
-| "Your page expired" | The form was open too long (sessions last 2 hours) or is from an old tab. Just submit again; your text is kept, your password is not. |
+| "Your page expired" | The form was open too long (a session ends after 30 minutes without activity) or is from an old tab. Just submit again; your text is kept, your password is not. |
 | Old design or old data | `git pull`, `composer install`, `npm ci`, `npm run build`, `php artisan migrate:fresh --seed`, restart the server. Check only one server is running on your port. |
 | "Port already in use" | Another `php artisan serve` is running. Close its terminal or use `--port=8100`. |
 | Log in page redirects to the home page | You are already signed in; open `/login` again to see the switch panel, or press Log out. |
-| Messages not translated | No translation service is configured (the default). Messages are shown as written. See ADR 0006 to connect one. |
+| Messages not translated | No translation service is configured (the default). The chat shows the original with a calm "Translation unavailable" note. See ADR 0006 to connect one. |
 | Emails not arriving | In development mail goes to `storage/logs/laravel.log` (`MAIL_MAILER=log`). |
 | A guide does not appear in search | They must be **verified**, have a **published** experience, and (to be bookable) weekly hours. |
